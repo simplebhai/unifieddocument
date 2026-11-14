@@ -43,7 +43,7 @@
 <body>
 <header>
   <h1>Multi-Agency Planning Document Platform</h1>
-  <nav><button id="t-search" class="on">Ask across documents</button><button id="t-docs">Document repository</button></nav>
+  <nav><button id="t-search" class="on">Ask across documents</button><button id="t-cmp">Conflicts and alignment</button><button id="t-docs">Document repository</button></nav>
 </header>
 <main>
   <aside id="filters"></aside>
@@ -56,6 +56,15 @@
       <p class="hint" id="hint">Results are passages from the documents, grouped by governing body, each with its document and PDF page. English questions are also matched against Hindi documents through a glossary of planning terms.</p>
       <div id="answer"></div>
       <div id="results"></div>
+    </div>
+    <div id="v-cmp" hidden>
+      <form class="search" id="cform">
+        <select id="topic" style="font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px"></select>
+        <input id="ctopic" placeholder="or type your own topic, e.g. warehousing near Partapur">
+        <button>Compare bodies</button>
+      </form>
+      <p class="hint" id="chint"></p>
+      <div id="cresults"></div>
     </div>
     <div id="v-docs" hidden></div>
   </section>
@@ -115,9 +124,53 @@ $('#results').addEventListener('click', async e => {
   const pre = document.createElement('pre'); pre.className = 'full'; pre.textContent = d.text; b.after(pre);
 });
 $('#form').addEventListener('submit', e => { e.preventDefault(); run(); });
-$('#t-search').onclick = () => { $('#v-search').hidden = false; $('#v-docs').hidden = true; $('#t-search').className = 'on'; $('#t-docs').className = ''; };
-$('#t-docs').onclick = () => { $('#v-search').hidden = true; $('#v-docs').hidden = false; $('#t-docs').className = 'on'; $('#t-search').className = ''; };
-loadDocs();
+function show(tab) { ['search','cmp','docs'].forEach(t => { $('#v-' + t).hidden = t !== tab; $('#t-' + t).className = t === tab ? 'on' : ''; }); }
+['search','cmp','docs'].forEach(t => $('#t-' + t).onclick = () => show(t));
+
+async function loadTopics() {
+  const d = await (await fetch('/api/topics')).json();
+  $('#topic').innerHTML = d.topics.map(t => `<option>${esc(t)}</option>`).join('');
+  $('#chint').textContent = d.model
+    ? `Local model "${d.model}" is on: it judges conflicts and drafts clauses. The order of precedence always comes from the rule table, not from the model. Review every finding against the cited pages.`
+    : 'No local model is running, so this shows the evidence side by side, the order of precedence from the Acts, and a template clause. Start the app with OLLAMA_MODEL set to get conflict findings and drafted clauses.';
+}
+async function runCompare() {
+  const topic = $('#ctopic').value.trim() || $('#topic').value;
+  const p = new URLSearchParams(); p.set('topic', topic);
+  selected().forEach((v, k) => { if (k === 'jurisdiction' || k === 'sector') p.append(k, v); });
+  $('#cresults').innerHTML = '<p class="hint">Comparing… with a local model this can take a few minutes.</p>';
+  const d = await (await fetch('/api/compare?' + p)).json();
+  const cite = n => { const e = d.evidence.find(x => x.n === n); return e ? `[${n}] ${esc(e.citation)}` : ''; };
+  let h = '';
+  if (d.model_error) h += `<p class="hint">The local model did not answer (${esc(d.model_error)}). Showing the rule-based view.</p>`;
+  if (d.findings) {
+    h += `<div class="group"><h2>Findings from the local model (${d.findings.length})</h2>` + (d.findings.length ? d.findings.map(f =>
+      `<div class="hit"><div class="cite">${esc((f.type || '').toUpperCase())}: ${esc(f.issue)}</div>
+       <div class="tags">${(f.bodies || []).map(b => `<span class="tag">${esc(b)}</span>`).join('')}${f.rule ? `<span class="tag">Rule ${esc(f.rule)}</span>` : ''}</div>
+       <div class="snip">${esc(f.explanation || '')}</div>
+       ${f.recommended_option ? `<div class="snip"><b>Recommended option:</b> ${esc(f.recommended_option)}</div>` : ''}
+       ${f.draft_clause ? `<div class="snip"><b>Suggested clause:</b> ${esc(f.draft_clause)}</div>` : ''}
+       <div class="hint" style="margin:6px 0 0">Evidence: ${(f.evidence || []).map(cite).join('; ') || 'none cited, treat with caution'}</div></div>`).join('')
+      : '<div class="hit">The model reported no conflict or alignment in these passages.</div>') + '</div>';
+  }
+  h += `<div class="group"><h2>Which document prevails, by the Acts</h2>` + (d.precedence.length ? d.precedence.map(p =>
+    `<div class="hit"><div class="cite">${esc(p.a_body)} and ${esc(p.b_body)}</div>
+     <div class="snip">${esc(p.a)}  ⟷  ${esc(p.b)}</div>
+     <div class="snip"><b>${p.prevails_title ? 'Prevails: ' + esc(p.prevails_title) : 'No hierarchy between these two'}</b>${p.rule_id ? ` (rule ${esc(p.rule_id)})` : ''}. ${esc(p.text)}</div>
+     ${p.rule_source ? `<div class="hint" style="margin:4px 0">Source: ${esc(p.rule_source)}${p.rule_pages ? ', PDF page ' + esc(p.rule_pages) : ''} (${esc(p.basis)})</div>` : ''}
+     ${p.note ? `<div class="tags"><span class="tag warn">${esc(p.note)}</span></div>` : ''}
+     ${p.template_clause ? `<div class="snip"><b>Template clause:</b> ${esc(p.template_clause)}</div>` : ''}</div>`).join('')
+    : '<div class="hit">Only one body has material on this topic.</div>') + '</div>';
+  const groups = {}; d.evidence.forEach(e => (groups[e.body] ??= []).push(e));
+  h += Object.entries(groups).map(([body, ev]) => `<div class="group"><h2>${esc(body)}</h2>` + ev.map(e =>
+    `<div class="hit"><div class="cite">[${e.n}] ${esc(e.title)}, PDF page ${e.page}</div>
+     <div class="tags"><span class="tag">${esc(e.level)}</span><span class="tag">${esc(e.legal_status)}</span>${methodTag(e.method)}</div>
+     <div class="snip">${e.snippet.replace(/<(?!\/?mark>)/g, '&lt;')}</div>
+     ${e.figures.length ? `<div class="hint" style="margin:6px 0 0">Figures found: ${e.figures.map(f => `${esc(f.what)} ${esc(f.value)}`).join('; ')}</div>` : ''}</div>`).join('') + '</div>').join('');
+  $('#cresults').innerHTML = h || '<p class="hint">Nothing found on this topic.</p>';
+}
+$('#cform').addEventListener('submit', e => { e.preventDefault(); runCompare(); });
+loadDocs(); loadTopics();
 </script>
 </body>
 </html>

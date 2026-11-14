@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from . import index
+from . import index, conflicts
 from .glossary import GLOSSARY, STOP
 
 ROOT = Path(__file__).resolve().parent
@@ -110,6 +110,15 @@ def answer(q: str, body: list[str] = Query(None), jurisdiction: list[str] = Quer
         return {"enabled": True, "answer": text, "sources": [h["citation"] for h in hits]}
     except Exception as e:
         return {"enabled": True, "error": str(e)}
+
+@app.get("/api/topics")
+def topics():
+    return {"topics": list(conflicts.TOPICS), "model": os.environ.get("OLLAMA_MODEL")}
+
+@app.get("/api/compare")
+def compare(topic: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None)):
+    """Evidence by body on one topic, the order of precedence, and a suggested resolution and policy clause."""
+    return conflicts.compare(db(), search, topic, None, jurisdiction, sector)
 
 @app.get("/")
 def home():

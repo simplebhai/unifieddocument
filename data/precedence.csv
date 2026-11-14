@@ -1,0 +1,8 @@
+rule_id,higher_level,lower_level,rule,source,source_doc,source_page,basis
+R1,1,2-7,"No development in NCR may violate the Regional Plan; the NCRPB Act overrides other non-conforming Acts and rules (NCRPB Act, Sections 29 and 27).",Draft Regional Plan 2041 for NCR,ncrpb_rp2041,12; 148,quoted in loaded document
+R2,2,3-7,"Rules, byelaws, policies and plans are made under the Act and cannot go beyond it.",UP Urban Planning and Development Act 1973,up_upd_act_1973,,general principle (no single clause quoted)
+R3,3,4,"State sectoral policies prevail over the building byelaws where the two differ (clause 1.6).",Model Building Byelaws 2025,up_bbl_2025,19,quoted in loaded document
+R4,5,6,"Zonal development plans are prepared for zones of the development area under the master plan; development must be in accordance with these plans (Sections 9 and 14).",UP Urban Planning and Development Act 1973,up_upd_act_1973,10; 15,quoted in loaded document
+R5,5-6,7,"Development, including projects, must be in accordance with the master plan and zonal plan; a separate procedure applies to government departments (Section 14).",UP Urban Planning and Development Act 1973,up_upd_act_1973,15,quoted in loaded document
+R6,same,same,"Two plans at the same level each bind only their own area. A difference between them is settled by amending a plan (Section 13: the Authority for minor changes, the State Government for any change) or by State Government direction (Section 41), within the Regional Plan.",UP Urban Planning and Development Act 1973,up_upd_act_1973,13; 44,quoted in loaded document
+R7,4,4,"The 2025 byelaws prevail over the earlier orders and byelaws listed in their Appendix-1 (clause 1.5).",Model Building Byelaws 2025,up_bbl_2025,19,quoted in loaded document

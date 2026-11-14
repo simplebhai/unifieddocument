@@ -12,7 +12,12 @@ A workspace for reading the plans of several governing bodies side by side. Pilo
    through a glossary of planning terms (`app/glossary.py`).
 3. **Filters** – by governing body, jurisdiction, sector and document type.
 
-Not built yet: conflict detection, synergy discovery, map-based filtering.
+4. **Conflicts and alignment** – pick a topic and see what each body says side by side, which document prevails
+   under the Acts (`data/precedence.csv`, every rule with its source page), a warning when the prevailing document
+   is only a draft, and a suggested policy clause. With a local model it also reports conflicts, alignments and gaps
+   and drafts the clause.
+
+Not built yet: map-based filtering and spatial conflict checks (need boundary layers).
 
 No cloud service is used. Everything runs on one computer.
 
@@ -26,10 +31,20 @@ uvicorn app.main:app --reload
 Open http://localhost:8000 (in Codespaces, open the forwarded port 8000). The search index is built on first start
 from `data/pages/`.
 
-### Optional: written answers from a local model
+### The local AI model
 
-Install [Ollama](https://ollama.com), pull a model, and start the app with `OLLAMA_MODEL=<model name>`. The app then
-adds a short written summary above the passages. Without it the app shows passages only.
+The app uses a ready open model that runs on the laptop through [Ollama](https://ollama.com). Nothing is sent online.
+
+```
+ollama pull llama3.2:3b          # about 8 GB RAM; use qwen2.5:7b on 16 GB or more
+OLLAMA_MODEL=llama3.2:3b uvicorn app.main:app        # Windows PowerShell: $env:OLLAMA_MODEL="llama3.2:3b"; uvicorn app.main:app
+```
+
+With the model on, search adds a written summary and the Conflicts tab adds findings and drafted clauses. The model
+only reads the passages the search finds and must cite them; the order of precedence is fixed by the rule table.
+Without the model the app still works and shows passages, precedence and template clauses.
+
+The findings are a planning aid, not legal advice. Check each one against the cited pages.
 
 ## Adding documents
 

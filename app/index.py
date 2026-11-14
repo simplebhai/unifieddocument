@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "index.sqlite"
 COLS = ["doc_id", "file", "title", "body", "jurisdiction", "sector", "doc_type", "year", "horizon",
-        "language", "status", "method"]
+        "language", "status", "method", "level", "legal_status"]
 
 def build(db_path=DB):
     if db_path.exists(): db_path.unlink()

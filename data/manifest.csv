@@ -1,26 +1,26 @@
-doc_id,file,title,body,jurisdiction,sector,doc_type,year,horizon,language,status,method,ocr_lang
-ncrpb_rp2041,DraftRegionalPlan-2041_English.pdf,Draft Regional Plan 2041 for NCR,NCRPB,NCR,Regional planning; Transport; Economy; Land use,Regional plan,2021,2041,English,core,text,
-ncrpb_ar2223,Annual_report_2022-23_English.pdf,NCRPB Annual Report 2022-23,NCRPB,NCR,Governance; Transport,Annual report,2023,,English,core,text,
-ncrtc_tod_duhai_eoi,Expression-of-Interest-for-Transit-Oriented-Development-at-RRTS-Depot-Duhai2212.pdf,EOI for Transit Oriented Development at RRTS Depot Duhai,NCRTC,Duhai (Ghaziabad),Transport; TOD; Real estate,Expression of interest,2023,,English,core,text,
-mda_mp2031_report,MEERUT MASTERPLAN 2031.pdf,Meerut Master Plan 2031 (Draft) report,MDA,Meerut,Land use; Infrastructure; Housing,Master plan report,,2031,Hindi,core,krutidev,
-mda_mp2031_map,meerut master plan.pdf,Meerut Master Plan 2031 (Revised) map with public notice clippings,MDA,Meerut,Land use,Map,,2031,Hindi; English,core,ocr,hin+eng
-gda_mp2031_map_a,Master Plan - 2031 Ghaziabad (Draft).pdf,Ghaziabad Master Plan 2031 (Draft) land-use map,GDA,Ghaziabad,Land use,Map,,2031,English,core,text,
-gda_mp2031_map_b,e695d_RRTS.pdf,Ghaziabad Master Plan 2031 (Draft) map sheet (RRTS),GDA,Ghaziabad,Land use; Transport,Map,,2031,English,core,text,
-gda_gml_mp2031_map,GDA_12_Master_Plan_2031_Map.pdf,Ghaziabad + Modinagar + Loni Master Plan 2031 (Revised) map,GDA,Ghaziabad; Modinagar; Loni,Land use,Map,,2031,Hindi,core,none,
-gda_modinagar_mp2031_zones,af01d_Zone Boundary After Smiti .pdf,Modinagar Master Plan 2031 (Draft) zone boundary map with RRTS influence zone,GDA,Modinagar,Land use; Transport; TOD,Map,,2031,English,core,text,
-gda_modinagar_landuse_rrts,Modinagar RRTS 2.pdf,Modinagar land-use map with RRTS stations,GDA,Modinagar,Land use; Transport,Map,,,English,core,text,
-gda_modinagar_mp2021_zones,modinagar  zone boundries.pdf,Modinagar Masterplan 2021 (Draft) zone map,GDA,Modinagar,Land use,Map,,2021,English; Hindi,core,ocr,eng
-gda_zdp_zone1,GDA_11_Zonal_Plan_Ghaziabad.pdf,Zonal Development Plan Zone-1 of Ghaziabad Master Plan 2021 (proposed land use),GDA,Ghaziabad,Land use,Map,,2021,English,core,ocr,eng
-noida_dngir_mp2041,DNGIR Master Plan Report 28 October 2024.pdf,Master Plan for DNGIR 2041 (Final Proposal Report),Noida Authority,Dadri-Noida-Ghaziabad Investment Region,Land use; Industry; Infrastructure,Master plan report,2024,2041,English,adjacent,text,
-adb_ecd_guidance,2023 RCI Confernce on ECD - Guidance Note.pdf,Economic Corridor Development: Guidance Note,ADB,International,Economic corridors,Guidance note,2023,,English,reference,text,
-nldsl_ulip,ULIP_LDB_Integration_Requirement.pdf,ULIP Integration Requirement Document,NLDSL,India,Logistics IT,Technical specification,2026,,English,excluded,none,
-up_upd_act_1973,GDA_01_UP_Urban_Planning_Development_Act_1973.pdf,UP Urban Planning and Development Act 1973,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,1973,,English,core,ocr,eng
-up_upd_amend_2023,GDA_02_UPUPD_Amended_Act_2023.pdf,UP Urban Planning and Development (Amended) Act 2023,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,2023,,Hindi,core,ocr,hin+eng
-up_sada_act_1986,GDA_03_UP_SADA_Act_1986.pdf,UP Special Area Development Authorities Act 1986,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,1986,,English,core,text,
-up_bbl_2025,GDA_04_UP_Building_Byelaws_2025_English.pdf,Model Building Construction and Development Byelaws and Model Zoning Regulations 2025,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Zoning,Byelaws,2025,,English,core,text,
-up_bbl_2025_overview,GDA_05_UPMBBL_2025_Zoning_Overview.pdf,Model Byelaws and Zoning Regulations 2025: dissemination workshop overview,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Zoning,Presentation,2025,,English; Hindi,core,text,
-up_tdr_2022,GDA_06_TDR_Byelaws_2022.pdf,Transferable Development Rights Permission Bye-Laws 2022,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; TOD,Byelaws,2022,,Hindi,core,ocr,hin+eng
-up_lps_2024_draft,GDA_07_Land_Pooling_Scheme_Policy_2024_Draft.pdf,Revised Land Pooling Scheme Policy 2024 (Draft),Govt of Uttar Pradesh,Uttar Pradesh,Land assembly,Policy,2024,,Hindi,core,ocr,hin+eng
-up_luc_rule_2014,GDA_08_Land_Use_Conversion_Charges_Rule_2014.pdf,Land Use Conversion Charges Rule 2014,Govt of Uttar Pradesh,Uttar Pradesh,Land use; Fees,Rules,2014,,Hindi,core,ocr,hin+eng
-up_devfee_2014,GDA_09_Development_Fee_Rules_2014.pdf,Development Fee Rules 2014,Govt of Uttar Pradesh,Uttar Pradesh,Fees; Infrastructure,Rules,2014,,Hindi,core,ocr,hin+eng
-up_far_notification,GDA_10_FAR_Group_Housing_Notification.pdf,Notification regarding FAR in Group Housing Maps,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Housing,Notification,,,Hindi,core,ocr,hin+eng
+doc_id,file,title,body,jurisdiction,sector,doc_type,year,horizon,language,status,method,ocr_lang,level,legal_status
+ncrpb_rp2041,DraftRegionalPlan-2041_English.pdf,Draft Regional Plan 2041 for NCR,NCRPB,NCR,Regional planning; Transport; Economy; Land use,Regional plan,2021,2041,English,core,text,,1,Draft
+ncrpb_ar2223,Annual_report_2022-23_English.pdf,NCRPB Annual Report 2022-23,NCRPB,NCR,Governance; Transport,Annual report,2023,,English,core,text,,9,Informational
+ncrtc_tod_duhai_eoi,Expression-of-Interest-for-Transit-Oriented-Development-at-RRTS-Depot-Duhai2212.pdf,EOI for Transit Oriented Development at RRTS Depot Duhai,NCRTC,Duhai (Ghaziabad),Transport; TOD; Real estate,Expression of interest,2023,,English,core,text,,7,Proposal
+mda_mp2031_report,MEERUT MASTERPLAN 2031.pdf,Meerut Master Plan 2031 (Draft) report,MDA,Meerut,Land use; Infrastructure; Housing,Master plan report,,2031,Hindi,core,krutidev,,5,Draft
+mda_mp2031_map,meerut master plan.pdf,Meerut Master Plan 2031 (Revised) map with public notice clippings,MDA,Meerut,Land use,Map,,2031,Hindi; English,core,ocr,hin+eng,5,Revised (as titled)
+gda_mp2031_map_a,Master Plan - 2031 Ghaziabad (Draft).pdf,Ghaziabad Master Plan 2031 (Draft) land-use map,GDA,Ghaziabad,Land use,Map,,2031,English,core,text,,5,Draft
+gda_mp2031_map_b,e695d_RRTS.pdf,Ghaziabad Master Plan 2031 (Draft) map sheet (RRTS),GDA,Ghaziabad,Land use; Transport,Map,,2031,English,core,text,,5,Draft
+gda_gml_mp2031_map,GDA_12_Master_Plan_2031_Map.pdf,Ghaziabad + Modinagar + Loni Master Plan 2031 (Revised) map,GDA,Ghaziabad; Modinagar; Loni,Land use,Map,,2031,Hindi,core,none,,5,Revised (as titled)
+gda_modinagar_mp2031_zones,af01d_Zone Boundary After Smiti .pdf,Modinagar Master Plan 2031 (Draft) zone boundary map with RRTS influence zone,GDA,Modinagar,Land use; Transport; TOD,Map,,2031,English,core,text,,5,Draft
+gda_modinagar_landuse_rrts,Modinagar RRTS 2.pdf,Modinagar land-use map with RRTS stations,GDA,Modinagar,Land use; Transport,Map,,,English,core,text,,5,Not confirmed
+gda_modinagar_mp2021_zones,modinagar  zone boundries.pdf,Modinagar Masterplan 2021 (Draft) zone map,GDA,Modinagar,Land use,Map,,2021,English; Hindi,core,ocr,eng,5,Draft
+gda_zdp_zone1,GDA_11_Zonal_Plan_Ghaziabad.pdf,Zonal Development Plan Zone-1 of Ghaziabad Master Plan 2021 (proposed land use),GDA,Ghaziabad,Land use,Map,,2021,English,core,ocr,eng,6,Not confirmed
+noida_dngir_mp2041,DNGIR Master Plan Report 28 October 2024.pdf,Master Plan for DNGIR 2041 (Final Proposal Report),Noida Authority,Dadri-Noida-Ghaziabad Investment Region,Land use; Industry; Infrastructure,Master plan report,2024,2041,English,adjacent,text,,5,Notified (per cover page)
+adb_ecd_guidance,2023 RCI Confernce on ECD - Guidance Note.pdf,Economic Corridor Development: Guidance Note,ADB,International,Economic corridors,Guidance note,2023,,English,reference,text,,9,Reference
+nldsl_ulip,ULIP_LDB_Integration_Requirement.pdf,ULIP Integration Requirement Document,NLDSL,India,Logistics IT,Technical specification,2026,,English,excluded,none,,9,Reference
+up_upd_act_1973,GDA_01_UP_Urban_Planning_Development_Act_1973.pdf,UP Urban Planning and Development Act 1973,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,1973,,English,core,ocr,eng,2,In force (check amendments)
+up_upd_amend_2023,GDA_02_UPUPD_Amended_Act_2023.pdf,UP Urban Planning and Development (Amended) Act 2023,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,2023,,Hindi,core,ocr,hin+eng,2,In force (check amendments)
+up_sada_act_1986,GDA_03_UP_SADA_Act_1986.pdf,UP Special Area Development Authorities Act 1986,Govt of Uttar Pradesh,Uttar Pradesh,Legal; Urban planning,Act,1986,,English,core,text,,2,In force (check amendments)
+up_bbl_2025,GDA_04_UP_Building_Byelaws_2025_English.pdf,Model Building Construction and Development Byelaws and Model Zoning Regulations 2025,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Zoning,Byelaws,2025,,English,core,text,,4,Published
+up_bbl_2025_overview,GDA_05_UPMBBL_2025_Zoning_Overview.pdf,Model Byelaws and Zoning Regulations 2025: dissemination workshop overview,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Zoning,Presentation,2025,,English; Hindi,core,text,,9,Informational
+up_tdr_2022,GDA_06_TDR_Byelaws_2022.pdf,Transferable Development Rights Permission Bye-Laws 2022,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; TOD,Byelaws,2022,,Hindi,core,ocr,hin+eng,4,Published
+up_lps_2024_draft,GDA_07_Land_Pooling_Scheme_Policy_2024_Draft.pdf,Revised Land Pooling Scheme Policy 2024 (Draft),Govt of Uttar Pradesh,Uttar Pradesh,Land assembly,Policy,2024,,Hindi,core,ocr,hin+eng,3,Draft
+up_luc_rule_2014,GDA_08_Land_Use_Conversion_Charges_Rule_2014.pdf,Land Use Conversion Charges Rule 2014,Govt of Uttar Pradesh,Uttar Pradesh,Land use; Fees,Rules,2014,,Hindi,core,ocr,hin+eng,3,Published
+up_devfee_2014,GDA_09_Development_Fee_Rules_2014.pdf,Development Fee Rules 2014,Govt of Uttar Pradesh,Uttar Pradesh,Fees; Infrastructure,Rules,2014,,Hindi,core,ocr,hin+eng,3,Published
+up_far_notification,GDA_10_FAR_Group_Housing_Notification.pdf,Notification regarding FAR in Group Housing Maps,Govt of Uttar Pradesh,Uttar Pradesh,Building regulation; Housing,Notification,,,Hindi,core,ocr,hin+eng,3,Published
