@@ -1,0 +1,34 @@
+"""English planning terms -> Hindi equivalents, so English questions also reach Hindi documents."""
+GLOSSARY = {
+    "master plan": ["महायोजना"], "zonal plan": ["जोनल", "क्षेत्रीय विकास योजना"], "zonal": ["जोनल"],
+    "land use": ["भू-उपयोग", "भू उपयोग"], "landuse": ["भू-उपयोग"],
+    "residential": ["आवासीय"], "commercial": ["व्यावसायिक", "वाणिज्यिक"], "industrial": ["औद्योगिक"],
+    "industry": ["उद्योग", "औद्योगिक"], "agriculture": ["कृषि"], "agricultural": ["कृषि"],
+    "green belt": ["हरित पट्टी", "ग्रीन बेल्ट"], "transport": ["परिवहन", "यातायात"], "traffic": ["यातायात"],
+    "road": ["मार्ग", "सड़क"], "roads": ["मार्ग", "सड़क"], "railway": ["रेलवे"],
+    "rrts": ["आर.आर.टी.एस.", "आरआरटीएस", "रैपिड रेल"], "metro": ["मेट्रो"],
+    "tod": ["टी.ओ.डी.", "ट्रांजिट ओरिएंटेड"], "transit oriented development": ["टी.ओ.डी.", "ट्रांजिट ओरिएंटेड"],
+    "far": ["एफ.ए.आर.", "तल क्षेत्र अनुपात"], "floor area ratio": ["एफ.ए.आर.", "तल क्षेत्र अनुपात"],
+    "density": ["घनत्व"], "population": ["जनसंख्या"], "housing": ["आवास", "आवासीय"],
+    "development authority": ["विकास प्राधिकरण"], "development fee": ["विकास शुल्क"],
+    "development charges": ["विकास शुल्क"], "conversion charges": ["परिवर्तन शुल्क"],
+    "land use conversion": ["भू-उपयोग परिवर्तन"], "land pooling": ["लैण्ड पूलिंग", "लैंड पूलिंग"],
+    "tdr": ["टी.डी.आर.", "हस्तान्तरणीय विकास अधिकार", "हस्तांतरणीय विकास अधिकार"],
+    "transferable development rights": ["टी.डी.आर.", "हस्तान्तरणीय विकास अधिकार"],
+    "water supply": ["जलापूर्ति"], "sewerage": ["सीवरेज", "जल-मल"], "drainage": ["जल निकासी", "ड्रेनेज"],
+    "solid waste": ["ठोस अपशिष्ट"], "logistics": ["लॉजिस्टिक", "लाजिस्टिक"], "expressway": ["एक्सप्रेसवे", "एक्सप्रेस-वे"],
+    "highway": ["राजमार्ग"], "parking": ["पार्किंग"], "mixed use": ["मिश्रित"], "village": ["ग्राम"],
+    "villages": ["ग्राम"], "river": ["नदी"], "park": ["पार्क"], "recreation": ["मनोरंजन"], "recreational": ["मनोरंजन"],
+    "employment": ["रोजगार"], "economy": ["आर्थिक", "अर्थव्यवस्था"], "economic": ["आर्थिक"],
+    "infrastructure": ["अवस्थापना"], "meerut": ["मेरठ"], "ghaziabad": ["गाजियाबाद"], "modinagar": ["मोदीनगर"],
+    "delhi": ["दिल्ली"], "duhai": ["दुहाई"], "partapur": ["परतापुर"], "muradnagar": ["मुरादनगर"], "loni": ["लोनी"],
+    "building": ["भवन"], "height": ["ऊंचाई", "ऊँचाई"], "setback": ["सेटबैक"], "ground coverage": ["भू-आच्छादन"],
+    "zoning": ["जोनिंग"], "heritage": ["धरोहर", "विरासत"], "environment": ["पर्यावरण"], "pollution": ["प्रदूषण"],
+    "airport": ["हवाई अड्डा", "एयरपोर्ट"], "freight": ["माल"], "corridor": ["कॉरिडोर", "कोरिडोर", "गलियारा"],
+    "station": ["स्टेशन"], "depot": ["डिपो"], "influence zone": ["प्रभाव क्षेत्र"], "policy": ["नीति"],
+    "act": ["अधिनियम"], "rules": ["नियमावली"], "notification": ["अधिसूचना"], "township": ["टाउनशिप"],
+    "slum": ["मलिन बस्ती"], "education": ["शिक्षा"], "health": ["स्वास्थ्य"], "tourism": ["पर्यटन"],
+}
+STOP = set("a an the of in on at to for and or is are was were be by with from as that this what which how do does "
+           "any there their its it about into where when who whom whose can could should would will shall has have had "
+           "proposed proposal around along area areas near plan plans between across under over than then also all each both more most other such not no nor per vs versus say says".split())

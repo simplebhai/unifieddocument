@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-Agency Planning Document Platform</title>
+<style>
+  :root { --ink:#1c2430; --muted:#5d6878; --line:#d9dee6; --bg:#f5f6f8; --card:#fff; --accent:#1f5fa8; --mark:#ffe58a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui, "Segoe UI", "Noto Sans", "Nirmala UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:24px; align-items:baseline; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; }
+  nav button { background:none; border:0; font:inherit; padding:6px 2px; margin-right:16px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+  nav button.on { color:var(--accent); border-color:var(--accent); font-weight:600; }
+  main { display:grid; grid-template-columns:250px 1fr; gap:20px; padding:20px 24px; max-width:1300px; margin:auto; }
+  @media (max-width:800px) { main { grid-template-columns:1fr; } }
+  aside { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; align-self:start; }
+  aside h3 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:14px 0 6px; }
+  aside h3:first-child { margin-top:0; }
+  aside label { display:block; font-size:14px; padding:1px 0; cursor:pointer; }
+  .search { display:flex; gap:8px; margin-bottom:14px; }
+  .search input { flex:1; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; }
+  .search button, .ghost { font:inherit; padding:10px 16px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  .ghost { background:#fff; color:var(--accent); padding:4px 10px; font-size:13px; }
+  .hint { color:var(--muted); font-size:13px; margin:0 0 14px; }
+  .group { background:var(--card); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; }
+  .group > h2 { font-size:15px; margin:0; padding:10px 14px; border-bottom:1px solid var(--line); background:#fafbfc; border-radius:8px 8px 0 0; }
+  .hit { padding:12px 14px; border-bottom:1px solid var(--line); }
+  .hit:last-child { border-bottom:0; }
+  .cite { font-weight:600; font-size:14px; }
+  .tags { margin:4px 0 6px; }
+  .tag { display:inline-block; font-size:12px; border:1px solid var(--line); border-radius:10px; padding:0 8px; margin-right:4px; color:var(--muted); background:#fff; }
+  .tag.warn { border-color:#c98a00; color:#8a5d00; }
+  .snip { font-size:14px; white-space:pre-wrap; word-break:break-word; }
+  mark { background:var(--mark); padding:0 1px; }
+  pre.full { white-space:pre-wrap; background:#fafbfc; border:1px solid var(--line); border-radius:6px; padding:10px; font:13px/1.5 inherit; max-height:420px; overflow:auto; margin:8px 0 0; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); background:#fafbfc; }
+  .answer { background:#eef4fb; border:1px solid #c5d8ee; border-radius:8px; padding:12px 14px; margin-bottom:16px; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Multi-Agency Planning Document Platform</h1>
+  <nav><button id="t-search" class="on">Ask across documents</button><button id="t-docs">Document repository</button></nav>
+</header>
+<main>
+  <aside id="filters"></aside>
+  <section>
+    <div id="v-search">
+      <form class="search" id="form">
+        <input id="q" placeholder="e.g. What is proposed around RRTS stations in Modinagar and Meerut?" autofocus>
+        <button>Search</button>
+      </form>
+      <p class="hint" id="hint">Results are passages from the documents, grouped by governing body, each with its document and PDF page. English questions are also matched against Hindi documents through a glossary of planning terms.</p>
+      <div id="answer"></div>
+      <div id="results"></div>
+    </div>
+    <div id="v-docs" hidden></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FACETS = [['body','Governing body'],['jurisdiction','Jurisdiction'],['sector','Sector'],['doc_type','Document type']];
+let DOCS = [];
+
+function selected() {
+  const p = new URLSearchParams();
+  document.querySelectorAll('#filters input:checked').forEach(i => p.append(i.name, i.value));
+  return p;
+}
+function methodTag(m, lang) {
+  if (m === 'ocr') return '<span class="tag warn">Scanned: text read by OCR, check figures against the PDF</span>';
+  if (m === 'krutidev') return '<span class="tag">Hindi text converted from legacy font</span>';
+  return '';
+}
+async function loadDocs() {
+  const d = await (await fetch('/api/docs')).json();
+  DOCS = d.docs;
+  $('#filters').innerHTML = FACETS.map(([k, label]) =>
+    `<h3>${label}</h3>` + d.facets[k].map(v => `<label><input type="checkbox" name="${k}" value="${esc(v)}"> ${esc(v)}</label>`).join('')).join('');
+  $('#filters').addEventListener('change', () => { renderDocs(); if ($('#q').value.trim()) run(); });
+  renderDocs();
+}
+function renderDocs() {
+  const sel = selected();
+  const rows = DOCS.filter(d => FACETS.every(([k]) => { const want = sel.getAll(k); return !want.length || want.some(w => d[k].includes(w)); }));
+  $('#v-docs').innerHTML = `<p class="hint">${rows.length} of ${DOCS.length} documents.</p><table><tr><th>Document</th><th>Body</th><th>Jurisdiction</th><th>Sector</th><th>Type</th><th>Year / horizon</th><th>Language</th><th>Pages</th><th>Status</th></tr>` +
+    rows.map(d => `<tr><td><b>${esc(d.title)}</b><br><span class="hint">${esc(d.file)}</span>${d.chars == 0 ? '<br><span class="tag warn">No searchable text</span>' : ''}</td><td>${esc(d.body)}</td><td>${esc(d.jurisdiction)}</td><td>${esc(d.sector)}</td><td>${esc(d.doc_type)}</td><td>${esc(d.year || '–')} / ${esc(d.horizon || '–')}</td><td>${esc(d.language)}</td><td>${d.pages || '–'}</td><td>${esc(d.status)}</td></tr>`).join('') + '</table>';
+}
+async function run() {
+  const q = $('#q').value.trim(); if (!q) return;
+  const p = selected(); p.set('q', q);
+  $('#results').innerHTML = '<p class="hint">Searching…</p>'; $('#answer').innerHTML = '';
+  const d = await (await fetch('/api/search?' + p)).json();
+  if (!d.results.length) { $('#results').innerHTML = '<p class="hint">No passages found. Try fewer or different words, or clear the filters.</p>'; return; }
+  const groups = {};
+  d.results.forEach(r => (groups[r.body] ??= []).push(r));
+  $('#results').innerHTML = `<p class="hint">${d.results.length} passages from ${Object.keys(groups).length} governing bodies.</p>` +
+    Object.entries(groups).map(([body, hits]) => `<div class="group"><h2>${esc(body)}</h2>` + hits.map(h =>
+      `<div class="hit"><div class="cite">${esc(h.title)}, PDF page ${h.page}</div>
+       <div class="tags"><span class="tag">${esc(h.jurisdiction)}</span><span class="tag">${esc(h.doc_type)}${h.year ? ' ' + esc(h.year) : ''}</span><span class="tag">${esc(h.language)}</span>${methodTag(h.method)}</div>
+       <div class="snip">${h.snippet.replace(/<(?!\/?mark>)/g, '&lt;')}</div>
+       <button class="ghost" data-doc="${esc(h.doc_id)}" data-page="${h.page}" style="margin-top:8px">Show full page text</button></div>`).join('') + '</div>').join('');
+  fetch('/api/answer?' + p).then(r => r.json()).then(a => {
+    if (a.enabled && a.answer) $('#answer').innerHTML = `<div class="answer"><b>Summary from local model (check against the passages below)</b>\n${esc(a.answer)}</div>`;
+  }).catch(() => {});
+}
+$('#results').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-doc]'); if (!b) return;
+  if (b.nextElementSibling) { b.nextElementSibling.remove(); return; }
+  const d = await (await fetch(`/api/page?doc_id=${encodeURIComponent(b.dataset.doc)}&page=${b.dataset.page}`)).json();
+  const pre = document.createElement('pre'); pre.className = 'full'; pre.textContent = d.text; b.after(pre);
+});
+$('#form').addEventListener('submit', e => { e.preventDefault(); run(); });
+$('#t-search').onclick = () => { $('#v-search').hidden = false; $('#v-docs').hidden = true; $('#t-search').className = 'on'; $('#t-docs').className = ''; };
+$('#t-docs').onclick = () => { $('#v-search').hidden = true; $('#v-docs').hidden = false; $('#t-docs').className = 'on'; $('#t-search').className = ''; };
+loadDocs();
+</script>
+</body>
+</html>
