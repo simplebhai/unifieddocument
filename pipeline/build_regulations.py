@@ -9,6 +9,7 @@ PURCH = ["Above base FAR is purchasable: up to 20% + 20% of base on roads up to 
          "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
          "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
          "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."]
+PURCH_REF = ["Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."]
 C = []
 def card(id, doc, cat, scope, title, summary, uses=None, table=None, tables=None, conditions=(), incentives=(), cites=(), tod=False, quality=None):
     C.append(dict(id=id, doc_id=doc, category=cat, scope=scope, title=title, summary=summary, uses=uses,
@@ -17,42 +18,45 @@ def card(id, doc, cat, scope, title, summary, uses=None, table=None, tables=None
 T = lambda title, cols, rows: dict(title=title, columns=cols, rows=rows)
 
 # ---------------- FAR / FSI ----------------
+card("far_bbl_purch", BBL, "far", "state", "Purchasable, premium and green-building FAR", "How FAR above the base is bought; it applies to every use in the tables here.",
+     table=T("Purchasable and premium purchasable FAR, as a share of base FAR, by road width", ["Road width", "Purchasable", "Premium purchasable"], [["Up to 12 m", "Up to 20%", "20%"], ["≥12 to <24 m", "50%", "50%"], ["≥24 to <45 m", "100%", "150%"], ["≥45 m", "100%", "Unrestricted"]]),
+     conditions=PURCH[1:3], incentives=PURCH[3:], cites=[(117, "§9.2.3"), (118, "§9.2.4–9.2.5"), (119, "§9.3")])
 card("far_bbl_resplot", BBL, "far", "state", "Plotted residential", "Base FAR falls as plots get larger; the maximum is 2.25 to 2.50.", ["residential_plotted"],
      T("Plotted development, single or multi unit", ["Plot area (sq m)", "Base FAR", "Max FAR"],
        [["≥35 to <150", "2.0", "2.25"], ["≥150 to <300", "1.8", "2.50"], ["≥300 to <500", "1.75", "2.50"], ["≥500 to <1200", "1.5", "2.50"], ["≥1200", "1.25", "2.50"]]),
-     conditions=["FAR is computed telescopically across the plot-size slabs (§3.2.2, p.49)."], incentives=PURCH[1:], cites=[(49, "§3.2.2.1"), (50, "§3.2.2.1"), (118, "§9.2.3")])
+     conditions=["FAR is computed telescopically across the plot-size slabs (§3.2.2, p.49)."], incentives=PURCH_REF, cites=[(49, "§3.2.2.1"), (50, "§3.2.2.1"), (118, "§9.2.3")])
 card("far_bbl_gh", BBL, "far", "state", "Group housing", "Base 1.50 in built-up areas and 2.50 elsewhere; the maximum rises with road width and is unrestricted on 45 m roads.", ["group_housing"],
      tables=[T("Group housing, built-up area", RW, [["≥9 to <12 m", "1.50", "2.10"], ["≥12 to <18 m", "1.50", "3.00"], ["≥18 to <24 m", "1.50", "3.00"], ["≥24 to <45 m", "1.50", "5.25"], ["≥45 m", "1.50", "UR"]]),
              T("Group housing, non-built-up area", RW, [["≥12 to <18 m", "2.50", "5.00"], ["≥18 to <24 m", "2.50", "5.00"], ["≥24 to <45 m", "2.50", "8.75"], ["≥45 m", "2.50", "UR"]]),
              T("Affordable group housing, built-up area", RW, [["≥9 to <12 m", "2.00", "2.40"], ["≥12 to <18 m", "2.00", "4.00"], ["≥18 to <24 m", "2.00", "4.00"], ["≥24 to <45 m", "2.00", "7.00"], ["≥45 m", "2.00", "UR"]]),
              T("Affordable group housing, non-built-up area", RW, [["≥12 to <18 m", "3.00", "6.00"], ["≥18 to <24 m", "3.00", "6.00"], ["≥24 to <45 m", "3.00", "9.00"], ["≥45 m", "3.00", "UR"]])],
-     incentives=PURCH, cites=[(50, "§3.2.2.2")])
+     incentives=PURCH_REF, cites=[(50, "§3.2.2.2")])
 card("far_bbl_comm", BBL, "far", "state", "Commercial", "Base 1.50 to 3.00 depending on type and area; maximum by road width.", ["commercial"],
      tables=[T("Commercial units over 100 sq m, built-up area", RW, [["≥12 to <24 m", "1.50", "3.00"], ["≥24 to <45 m", "1.50", "5.00"], ["≥45 m", "1.50", "UR"]]),
              T("Commercial units over 100 sq m, non-built-up area", RW, [["≥12 to <24 m", "1.75", "3.50"], ["≥24 to <45 m", "1.75", "6.13"], ["≥45 m", "1.75", "UR"]]),
              T("Shopping malls, built-up area", RW, [["≥18 to <24 m", "2.00", "4.00"], ["≥24 to <45 m", "2.00", "7.00"], ["≥45 m", "2.00", "UR"]]),
              T("Shopping malls, non-built-up area", RW, [["≥18 to <24 m", "3.00", "6.00"], ["≥24 to <45 m", "3.00", "10.50"], ["≥45 m", "3.00", "UR"]])],
-     incentives=PURCH, cites=[(50, "§3.2.2.3"), (51, "§3.2.2.3")])
+     incentives=PURCH_REF, cites=[(50, "§3.2.2.3"), (51, "§3.2.2.3")])
 card("far_bbl_office", BBL, "far", "state", "Office buildings", "Base 2.00 (built-up) or 2.50 (non-built-up); needs an 18 m road.", ["office"],
      tables=[T("Office buildings, built-up area", RW, [["≥18 to <24 m", "2.00", "4.00"], ["≥24 to <45 m", "2.00", "7.00"], ["≥45 m", "2.00", "UR"]]),
              T("Office buildings, non-built-up area", RW, [["≥18 to <24 m", "2.50", "5.00"], ["≥24 to <45 m", "2.50", "8.75"], ["≥45 m", "2.50", "UR"]])],
-     incentives=PURCH, cites=[(53, "§3.2.2.3, item 15")])
+     incentives=PURCH_REF, cites=[(53, "§3.2.2.3, item 15")])
 card("far_bbl_ind", BBL, "far", "state", "Industrial", "Base 2.00 to 2.50 for industrial buildings and 3.00 for flatted factories, MSME and data centres.", ["industrial"],
      tables=[T("Industrial buildings (other than MSME)", RW, [["<12 m", "2.00", "2.00"], ["≥12 to <24 m", "2.50", "5.00"], ["≥24 to <45 m", "2.50", "8.75"], ["≥45 m", "2.50", "UR"]]),
              T("Flatted factories, MSME, data centres", RW, [["<12 m", "3.00", "3.00"], ["≥12 to <24 m", "3.00", "6.00"], ["≥24 to <45 m", "3.00", "10.50"], ["≥45 m", "3.00", "UR"]])],
      conditions=["Hostels and dormitories for workers are allowed up to 20% of FAR (§7.1.5, p.107).",
                  "Industry permitted in an agriculture zone gets 50% of the base FAR (Note-2, p.57)."],
-     incentives=PURCH, cites=[(56, "§3.2.2.7"), (57, "§3.2.2.7"), (107, "§7.1.5")])
+     incentives=PURCH_REF, cites=[(56, "§3.2.2.7"), (57, "§3.2.2.7"), (107, "§7.1.5")])
 card("far_bbl_mixed", BBL, "far", "state", "Mixed use", "Base 2.00 (built-up) or 2.50 (non-built-up), rising to 7.00 or 8.75 on 24 to 45 m roads.", ["mixed_use"],
      tables=[T("Mixed use, built-up area (base FAR 2.00)", ["Road width", "Purchasable", "Premium purchasable", "Max FAR"], [["Up to 12 m", "NA", "NA", "2.00"], ["≥12 to 24 m", "1.00", "1.00", "4.00"], ["≥24 to 45 m", "2.00", "3.00", "7.00"], ["≥45 m", "2.00", "UR", "UR"]]),
              T("Mixed use, non-built-up area (base FAR 2.50)", ["Road width", "Purchasable", "Premium purchasable", "Max FAR"], [["Up to 12 m", "NA", "NA", "2.50"], ["≥12 to 24 m", "1.25", "1.25", "5.00"], ["≥24 to 45 m", "2.50", "3.75", "8.75"], ["≥45 m", "2.50", "UR", "UR"]])],
-     incentives=PURCH[2:], cites=[(112, "§8.1.3.1")])
+     incentives=PURCH_REF, cites=[(112, "§8.1.3.1")])
 card("far_bbl_inst", BBL, "far", "state", "Institutional", "Hospitals and colleges: base 1.00 to 2.50, maximum by road width.", ["institutional"],
      tables=[T("Hospital over 50 beds, built-up area", RW, [["≥18 to <24 m", "1.50", "3.00"], ["≥24 to <45 m", "1.50", "5.25"], ["≥45 m", "1.50", "UR"]]),
              T("Hospital over 50 beds, non-built-up area", RW, [["≥18 to <24 m", "2.50", "5.00"], ["≥24 to <45 m", "2.50", "8.75"], ["≥45 m", "2.50", "UR"]]),
              T("Secondary and degree colleges, universities, built-up area", RW, [["≥12 to <24 m", "1.00", "2.00"], ["≥24 to <45 m", "1.00", "3.50"], ["≥45 m", "1.00", "UR"]]),
              T("Secondary and degree colleges, universities, non-built-up area", RW, [["≥12 to <24 m", "2.00", "4.00"], ["≥24 to <45 m", "2.00", "7.00"], ["≥45 m", "2.00", "UR"]])],
-     incentives=PURCH, cites=[(54, "§3.2.2.4"), (55, "§3.2.2.5")])
+     incentives=PURCH_REF, cites=[(54, "§3.2.2.4"), (55, "§3.2.2.5")])
 card("far_bbl_wh", BBL, "far", "state", "Warehousing and storage", "Fixed FAR with no purchasable increase.", ["warehousing"],
      T("Storage and warehousing", ["Type", "Road width", "Base FAR", "Max FAR"], [["Storage / warehousing, built-up", "≥12 m", "0.80", "0.80"], ["Storage / warehousing, non-built-up", "≥12 m", "1.20", "1.20"], ["Cold storage", "≥18 m", "1.20", "1.20"]]),
      cites=[(53, "§3.2.2.3, items 11–12")])
@@ -321,6 +325,11 @@ CATS = [dict(id="far", label="FAR / FSI"), dict(id="coverage_height", label="Gro
         dict(id="fire", label="Fire safety"), dict(id="heritage", label="Heritage and rivers"), dict(id="fees", label="Fees and charges"), dict(id="value_capture", label="TDR, pooling and extra FAR"), dict(id="process", label="Permissions and process")]
 USES = [dict(id="all", label="All uses"), dict(id="residential_plotted", label="Residential, plotted"), dict(id="group_housing", label="Group housing"), dict(id="commercial", label="Commercial"),
         dict(id="office", label="Office"), dict(id="industrial", label="Industrial"), dict(id="mixed_use", label="Mixed use"), dict(id="institutional", label="Institutional"), dict(id="warehousing", label="Warehousing")]
+_n = {}
+for c in C: _n[c["title"]] = _n.get(c["title"], 0) + 1
+_lab = {k["id"]: k["label"] for k in CATS}
+for c in C:
+    if _n[c["title"]] > 1: c["title"] = c["title"].rstrip() + ": " + _lab[c["category"]]
 out = Path(__file__).resolve().parent.parent / "data" / "regulations.json"
 json.dump(dict(categories=CATS, uses=USES, cards=C, flags=FLAGS), open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(len(C), "cards,", len(FLAGS), "flags ->", out)

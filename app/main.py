@@ -235,14 +235,23 @@ def rules_search(q: str = "", category: str = "", use: str = "all", body: str = 
         if body and e["body"] != body:
             continue
         text = _card_text(c) + " " + e["body"].lower() + " " + catlabel[c["category"]].lower()
-        alt = {"far": "floor area ratio fsi", "tod": "transit oriented", "ecs": "equivalent car space"}
-        text += " " + " ".join(alt.get(w, "") for w in alt if w in text)
-        stem = lambda w: w[:-1] if w.endswith(("s", "y")) and len(w) > 3 else w
-        if all(stem(w) in text for w in words):
+        tokens = set(re.findall(r"[a-z0-9]+", text.replace("floor area ratio", "far").replace("fsi", "far").replace("transit oriented", "tod").replace("equivalent car space", "ecs")))
+        stem = lambda w: w[:-2] if w.endswith("es") and len(w) > 4 else (w[:-1] if w.endswith("s") and len(w) > 3 else w)
+        alias = {"industry": "industrial", "industries": "industrial", "housing": "residential", "houses": "residential", "shops": "commercial", "shop": "commercial"}
+        have = {stem(t) for t in tokens}
+        head = " ".join([c["title"], c["summary"], catlabel[c["category"]], e["body"]] + [t["title"] for t in c["tables"]]).lower()
+        htoks = {stem(t) for t in re.findall(r"[a-z0-9]+", head.replace("floor area ratio", "far").replace("fsi", "far").replace("transit oriented", "tod"))}
+        if all(stem(alias.get(w, w)) in have or stem(w) in have for w in words):
+            e = e | {"primary": all(stem(alias.get(w, w)) in htoks or stem(w) in htoks for w in words)}
             score = sum(c["title"].lower().count(w) * 3 + text.count(w) for w in words)
             out.append(e | {"category_label": catlabel[c["category"]], "score": score})
     out.sort(key=lambda c: (-c["score"], c["level"]))
-    return {"cards": out, "categories": reg["categories"], "uses": reg["uses"],
+    gaps = [{"title": c["title"], "body": c["body"], "quality": c["quality"], "doc_title": c["doc_title"]} for c in out if c["quality"] in ("ocr", "map")]
+    out = [c for c in out if c["quality"] not in ("ocr", "map")]
+    also = [{"title": c["title"], "category_label": c["category_label"]} for c in out if not c["primary"]] if any(c["primary"] for c in out) and words else []
+    if also:
+        out = [c for c in out if c["primary"]]
+    return {"cards": out, "gaps": gaps, "also": also, "categories": reg["categories"], "uses": reg["uses"],
             "bodies": sorted({docs[c["doc_id"]]["body"] for c in reg["cards"]}), "words": words}
 
 

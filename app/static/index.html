@@ -253,8 +253,7 @@ function cardHtml(c, flagged) {
     c.tables.map(t => `<table><caption>${esc(t.title)}</caption><tr>${t.columns.map(h => `<th>${esc(h)}</th>`).join('')}</tr>${t.rows.map(r => `<tr>${r.map(v => `<td>${esc(v === 'UR' ? 'Unrestricted' : v)}</td>`).join('')}</tr>`).join('')}</table>`).join('') +
     (c.conditions.length ? `<h4>Conditions</h4><ul>${c.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') +
     (c.incentives.length ? `<h4>Purchasable allowances and incentives</h4><ul>${c.incentives.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') + `</div>
-    <div class="stand"><span class="pill">${esc(c.level_label)}</span><span class="pill ${c.draft ? 'draft' : 'force'}">${c.draft ? 'Draft: does not bind yet' : esc(c.legal_status)}</span>${flagged && flagged.has(c.id) ? '<span class="pill warn">In a conflict flagged above</span>' : ''}${c.quality === 'ocr' ? '<span class="pill warn">Scanned: figures not machine-readable</span>' : ''}${c.quality === 'map' ? '<span class="pill warn">Map sheet only</span>' : ''}
-      <div>${esc(c.standing)}</div>
+    <div class="stand"><span class="pill" title="${esc(c.standing)}">${esc(c.level_label)}</span><span class="pill ${c.draft ? 'draft' : 'force'}">${c.draft ? 'Draft: does not bind yet' : esc(c.legal_status)}</span>${flagged && flagged.has(c.id) ? '<span class="pill warn">In a conflict flagged above</span>' : ''}${c.quality === 'ocr' ? '<span class="pill warn">Scanned: figures not machine-readable</span>' : ''}${c.quality === 'map' ? '<span class="pill warn">Map sheet only</span>' : ''}
       <div class="cite">Source: ${esc(c.file)}, ${c.cites.map(x => `PDF p.${x.page} (${esc(x.ref)})`).join('; ')}</div></div></div>`;
 }
 function flagHtml(f, rules) {
@@ -272,9 +271,18 @@ async function findRules() {
     $('#r-use').innerHTML = d.uses.map(u => `<option value="${u.id}">${esc(u.label)}</option>`).join('');
     $('#r-body').innerHTML = '<option value="">All bodies</option>' + d.bodies.map(b => `<option>${esc(b)}</option>`).join('');
   }
-  $('#r-hint').textContent = d.cards.length ? `${d.cards.length} rule${d.cards.length > 1 ? 's' : ''} found. Each shows its document, legal standing and PDF page.` : 'No curated rule matches. Try fewer words, or use Ask a question to search the full text of every document.';
-  $('#r-out').innerHTML = d.cards.map(c => cardHtml(c)).join('');
+  const browsing = !$('#r-q').value.trim() && !$('#r-cat').value && !$('#r-body').value && ($('#r-use').value || 'all') === 'all';
+  const gaps = d.gaps.length ? `<p class="hint" style="grid-column:1/-1">No figures available from ${d.gaps.length} document${d.gaps.length > 1 ? 's' : ''} on this (map sheets or scans): ${[...new Set(d.gaps.map(g => g.doc_title))].map(esc).join('; ')}.</p>` : '';
+  if (browsing) {
+    $('#r-hint').textContent = `${d.cards.length} rules with figures or conditions. Pick one, or search above.`;
+    const by = {}; d.cards.forEach(c => (by[c.category_label] ??= []).push(c));
+    $('#r-out').innerHTML = Object.entries(by).map(([k, v]) => `<div class="rcard" style="grid-column:1/-1"><header><h3>${esc(k)}</h3></header><div class="in"><ul>` + v.map(c => `<li><a href="#" data-find="${esc(c.title)}">${esc(c.title)}</a> <span class="hint">${esc(c.body)}${c.draft ? ', draft' : ''}</span></li>`).join('') + '</ul></div></div>').join('') + gaps;
+    return;
+  }
+  $('#r-hint').textContent = d.cards.length ? `${d.cards.length} rule${d.cards.length > 1 ? 's' : ''} found. Each shows its document, legal standing (hover the grey label) and PDF page.` : 'No curated rule matches. Try fewer words, or use Ask a question to search the full text of every document.';
+  $('#r-out').innerHTML = d.cards.map(c => cardHtml(c)).join('') + (d.also.length ? `<p class="hint" style="grid-column:1/-1">Also mentioned in the conditions of: ${d.also.map(a => `<a href="#" data-find="${esc(a.title)}">${esc(a.title)}</a>`).join(', ')}.</p>` : '') + gaps;
 }
+$('#r-out').addEventListener('click', e => { const a = e.target.closest('a[data-find]'); if (!a) return; e.preventDefault(); $('#r-q').value = a.dataset.find; findRules(); });
 $('#rform').addEventListener('submit', e => { e.preventDefault(); findRules(); });
 ['r-cat', 'r-use', 'r-body'].forEach(id => $('#' + id).addEventListener('change', findRules));
 

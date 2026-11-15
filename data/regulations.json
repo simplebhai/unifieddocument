@@ -105,6 +105,70 @@
  ],
  "cards": [
   {
+   "id": "far_bbl_purch",
+   "doc_id": "up_bbl_2025",
+   "category": "far",
+   "scope": "state",
+   "title": "Purchasable, premium and green-building FAR",
+   "summary": "How FAR above the base is bought; it applies to every use in the tables here.",
+   "uses": null,
+   "tables": [
+    {
+     "title": "Purchasable and premium purchasable FAR, as a share of base FAR, by road width",
+     "columns": [
+      "Road width",
+      "Purchasable",
+      "Premium purchasable"
+     ],
+     "rows": [
+      [
+       "Up to 12 m",
+       "Up to 20%",
+       "20%"
+      ],
+      [
+       "≥12 to <24 m",
+       "50%",
+       "50%"
+      ],
+      [
+       "≥24 to <45 m",
+       "100%",
+       "150%"
+      ],
+      [
+       "≥45 m",
+       "100%",
+       "Unrestricted"
+      ]
+     ]
+    }
+   ],
+   "conditions": [
+    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
+    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118)."
+   ],
+   "incentives": [
+    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+   ],
+   "cites": [
+    {
+     "page": 117,
+     "ref": "§9.2.3"
+    },
+    {
+     "page": 118,
+     "ref": "§9.2.4–9.2.5"
+    },
+    {
+     "page": 119,
+     "ref": "§9.3"
+    }
+   ],
+   "requires_tod": false,
+   "quality": null
+  },
+  {
    "id": "far_bbl_resplot",
    "doc_id": "up_bbl_2025",
    "category": "far",
@@ -155,9 +219,7 @@
     "FAR is computed telescopically across the plot-size slabs (§3.2.2, p.49)."
    ],
    "incentives": [
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -320,10 +382,7 @@
    ],
    "conditions": [],
    "incentives": [
-    "Above base FAR is purchasable: up to 20% + 20% of base on roads up to 12 m, 50% + 50% on ≥12 to <24 m, 100% + 150% on ≥24 to <45 m, 100% + unrestricted on ≥45 m (purchasable + premium purchasable, §9.2.3, p.117).",
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -448,10 +507,7 @@
    ],
    "conditions": [],
    "incentives": [
-    "Above base FAR is purchasable: up to 20% + 20% of base on roads up to 12 m, 50% + 50% on ≥12 to <24 m, 100% + 150% on ≥24 to <45 m, 100% + unrestricted on ≥45 m (purchasable + premium purchasable, §9.2.3, p.117).",
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -530,10 +586,7 @@
    ],
    "conditions": [],
    "incentives": [
-    "Above base FAR is purchasable: up to 20% + 20% of base on roads up to 12 m, 50% + 50% on ≥12 to <24 m, 100% + 150% on ≥24 to <45 m, 100% + unrestricted on ≥45 m (purchasable + premium purchasable, §9.2.3, p.117).",
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -621,10 +674,7 @@
     "Industry permitted in an agriculture zone gets 50% of the base FAR (Note-2, p.57)."
    ],
    "incentives": [
-    "Above base FAR is purchasable: up to 20% + 20% of base on roads up to 12 m, 50% + 50% on ≥12 to <24 m, 100% + 150% on ≥24 to <45 m, 100% + unrestricted on ≥45 m (purchasable + premium purchasable, §9.2.3, p.117).",
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -727,8 +777,7 @@
    ],
    "conditions": [],
    "incentives": [
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -853,10 +902,7 @@
    ],
    "conditions": [],
    "incentives": [
-    "Above base FAR is purchasable: up to 20% + 20% of base on roads up to 12 m, 50% + 50% on ≥12 to <24 m, 100% + 150% on ≥24 to <45 m, 100% + unrestricted on ≥45 m (purchasable + premium purchasable, §9.2.3, p.117).",
-    "Purchasable FAR needs ROW of 12 m or more; 9 m for plotted residential and built-up group housing (§9.2.1, p.117).",
-    "Fee = proportional land × circle rate × coefficient (§9.2.5, p.118–119). It is an enabling provision, not a right (§9.2.4, p.118).",
-    "Green-rated buildings get 3%, 5% or 7% extra FAR free of cost, over and above the maximum (§9.3, p.119–120)."
+    "Above the base, FAR can be bought up to the maximum shown; see \"Purchasable, premium and green-building FAR\"."
    ],
    "cites": [
     {
@@ -988,7 +1034,7 @@
    "doc_id": "mda_mp2031_report",
    "category": "far",
    "scope": "authority:MDA",
-   "title": "Meerut Master Plan 2031 (draft)",
+   "title": "Meerut Master Plan 2031 (draft): FAR / FSI",
    "summary": "The plan sets FAR only for particular zones; I found no general FAR table by land use in it.",
    "uses": null,
    "tables": [
@@ -1087,7 +1133,7 @@
    "doc_id": "ncrpb_rp2041",
    "category": "far",
    "scope": "ncr",
-   "title": "Draft Regional Plan 2041",
+   "title": "Draft Regional Plan 2041: FAR / FSI",
    "summary": "Calls for higher FAR in notified TOD areas and in the Central NCR zone, without giving figures for Uttar Pradesh.",
    "uses": null,
    "tables": [],
@@ -1119,7 +1165,7 @@
    "doc_id": "gda_mp2031_map_b",
    "category": "far",
    "scope": "authority:GDA",
-   "title": "Ghaziabad Master Plan 2031 (draft), map sheets",
+   "title": "Ghaziabad Master Plan 2031 (draft), map sheets: FAR / FSI",
    "summary": "Only map sheets are loaded. They carry no FAR figures; the legend marks 'TOD Mixed (As per TOD Policy)'.",
    "uses": null,
    "tables": [],
@@ -1283,7 +1329,7 @@
    "doc_id": "mda_mp2031_report",
    "category": "coverage_height",
    "scope": "authority:MDA",
-   "title": "Meerut Master Plan 2031 (draft)",
+   "title": "Meerut Master Plan 2031 (draft): Ground coverage and height",
    "summary": "Sets coverage for particular zones only.",
    "uses": null,
    "tables": [
@@ -1343,7 +1389,7 @@
    "doc_id": "ncrpb_rp2041",
    "category": "coverage_height",
    "scope": "ncr",
-   "title": "Draft Regional Plan 2041",
+   "title": "Draft Regional Plan 2041: Ground coverage and height",
    "summary": "Policy only: non-restrictive height and amalgamation provisions for the Central NCR zone (p.27). No figures.",
    "uses": null,
    "tables": [],
@@ -1367,7 +1413,7 @@
    "doc_id": "gda_mp2031_map_a",
    "category": "coverage_height",
    "scope": "authority:GDA",
-   "title": "Ghaziabad Master Plan 2031 (draft), map sheets",
+   "title": "Ghaziabad Master Plan 2031 (draft), map sheets: Ground coverage and height",
    "summary": "Only map sheets are loaded; they carry no coverage or height rules.",
    "uses": null,
    "tables": [],
@@ -1642,7 +1688,7 @@
    "doc_id": "mda_mp2031_report",
    "category": "setbacks_roads",
    "scope": "authority:MDA",
-   "title": "Meerut Master Plan 2031 (draft)",
+   "title": "Meerut Master Plan 2031 (draft): Setbacks and road widths",
    "summary": "Green verges along major routes, and setbacks on the mixed-use roads.",
    "uses": null,
    "tables": [
@@ -1712,7 +1758,7 @@
    "doc_id": "ncrpb_rp2041",
    "category": "setbacks_roads",
    "scope": "ncr",
-   "title": "Draft Regional Plan 2041",
+   "title": "Draft Regional Plan 2041: Setbacks and road widths",
    "summary": "Intense development to be encouraged up to 1 km on either side of rail transit corridors, expressways and national highways.",
    "uses": null,
    "tables": [],
@@ -1732,7 +1778,7 @@
    "doc_id": "gda_mp2031_map_a",
    "category": "setbacks_roads",
    "scope": "authority:GDA",
-   "title": "Ghaziabad Master Plan 2031 (draft), map sheets",
+   "title": "Ghaziabad Master Plan 2031 (draft), map sheets: Setbacks and road widths",
    "summary": "Road rights of way and green belts are labelled on the map sheets (for example 100 m and 45 m ROW, 30 m green belt both sides). They must be read from the map for the location.",
    "uses": null,
    "tables": [],
@@ -1896,7 +1942,7 @@
    "doc_id": "mda_mp2031_report",
    "category": "landuse",
    "scope": "authority:MDA",
-   "title": "Meerut Master Plan 2031 (draft)",
+   "title": "Meerut Master Plan 2031 (draft): Permissible land use",
    "summary": "Mixed use is confined to listed roads in residential zones; special zones are defined along highways and the RRTS.",
    "uses": null,
    "tables": [],
@@ -1935,7 +1981,7 @@
    "doc_id": "ncrpb_rp2041",
    "category": "landuse",
    "scope": "ncr",
-   "title": "Draft Regional Plan 2041",
+   "title": "Draft Regional Plan 2041: Permissible land use",
    "summary": "Divides NCR into policy zones: NCT Delhi, Central NCR, Highway Corridor Zones and TOD, Natural Zone, Rest of NCR. Land use within each is set out in chapter 3.",
    "uses": null,
    "tables": [],
@@ -1959,7 +2005,7 @@
    "doc_id": "gda_mp2031_map_b",
    "category": "landuse",
    "scope": "authority:GDA",
-   "title": "Ghaziabad Master Plan 2031 (draft), map sheets",
+   "title": "Ghaziabad Master Plan 2031 (draft), map sheets: Permissible land use",
    "summary": "The proposed land use must be read from the map. The legend has residential (high, medium and low density), commercial, industrial (light and small, medium, UPSIDC), transportation, recreational and 'TOD Mixed (As per TOD Policy)'.",
    "uses": null,
    "tables": [],
@@ -2040,7 +2086,7 @@
    "doc_id": "mda_mp2031_report",
    "category": "tod",
    "scope": "authority:MDA",
-   "title": "Meerut Master Plan 2031 (draft)",
+   "title": "Meerut Master Plan 2031 (draft): TOD and economic incentives",
    "summary": "Influence zone of 1.5 km radius at RRTS stations and a strip along the track; two special development areas.",
    "uses": null,
    "tables": [
@@ -2143,7 +2189,7 @@
    "doc_id": "ncrpb_rp2041",
    "category": "tod",
    "scope": "ncr",
-   "title": "Draft Regional Plan 2041",
+   "title": "Draft Regional Plan 2041: TOD and economic incentives",
    "summary": "Provides for notifying TOD areas with higher FAR, mixed land use (vertical and horizontal) and value capture; intense development up to 1 km on either side of transit corridors and their nodes.",
    "uses": null,
    "tables": [],
