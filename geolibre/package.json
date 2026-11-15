@@ -1,0 +1,3 @@
+{ "name": "geolibre-bundle", "private": true, "type": "module",
+  "dependencies": { "@geolibre/map": "3.8.0", "@geolibre/core": "3.8.0", "maplibre-gl": "^6.16.0" },
+  "devDependencies": { "esbuild": "^0.25.0" } }

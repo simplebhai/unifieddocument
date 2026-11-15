@@ -68,4 +68,6 @@ The findings are a planning aid, not legal advice. Check each one against the ci
 
 Click the map (authority area, RRTS station influence zone, or the track strip) or pick a place. The app works out which jurisdictions overlap that point and shows only the documents that govern it. Switch between FAR/FSI, Ground coverage and height, Setbacks and road widths, Permissible land use, and TOD and economic incentives. Each document is a card with base and maximum tables, conditions, purchasable allowances, its place in the order of precedence, draft or published status, and PDF page citations. Conflicts, unlocks and checks are flagged above the cards.
 
+Map engine: the map is drawn with GeoLibre's headless engine (opengeos/GeoLibre, MIT; MapLibre GL JS 6). Rebuild the bundle with `sh geolibre/build.sh` (Node 20+); output goes to `app/static/geolibre/`. Basemaps are Esri streets and imagery tiles (keyless, need internet), or none.
+
 Data: `data/regulations.json` (built by `pipeline/build_regulations.py`, every figure cited to a PDF page), `app/static/geo.json` (OSM tehsils, stations, 1.5 km and 500 m influence zones). Limits: authority areas are tehsil approximations; GDA has map sheets only; the TOD Policy 2022 is not loaded; scanned Hindi notifications show no figures. Base-map tiles need internet on your machine; the vector layers work without them.
