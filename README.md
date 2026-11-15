@@ -5,21 +5,19 @@ A workspace for reading the plans of several governing bodies side by side. Pilo
 
 ## What works now
 
-1. **Document repository** – every document is tagged by governing body, jurisdiction, sector, type, year and plan
-   horizon (`data/manifest.csv`).
-2. **Provision finder** – ask for a specific provision ("FAR for industry"). For each governing body the app shows
-   the exact extract where the terms occur together, word for word, with document, legal status and PDF page, and
-   lists the bodies whose documents have no such provision. With the local model on, each extract also gets a
-   one-line statement of what it provides (`app/provisions.py`).
-   **Search across all documents with citations** – a plain-English question returns the matching passages grouped by
-   governing body, each with document name, body and PDF page. English questions also reach the Hindi documents
-   through a glossary of planning terms (`app/glossary.py`).
-3. **Filters** – by governing body, jurisdiction, sector and document type.
-
-4. **Conflicts and alignment** – pick a topic and see what each body says side by side, which document prevails
-   under the Acts (`data/precedence.csv`, every rule with its source page), a warning when the prevailing document
-   is only a draft, and a suggested policy clause. With a local model it also reports conflicts, alignments and gaps
-   and drafts the clause.
+1. **Rule lookup (standard form)** – pick a region, a land use and a rule (FAR, ground coverage, height, setbacks,
+   density, parking, road width, plot size, green belt, conversion charges, development fee). The app shows what
+   each governing body provides, word for word, with document, legal status and PDF page. A grid shows at a glance
+   which body has which rule, and a bar chart shows how many pages carry it.
+2. **Ask a question** – the same answer for a question in your own words, plus the other matching passages.
+3. **Conflicts and alignment** – what each body says on a topic, which document prevails under the Acts
+   (`data/precedence.csv`, each rule with its source page), a warning when the prevailing document is a draft, and a
+   suggested policy clause. With a local model it also reports conflicts, alignments and gaps and drafts the clause.
+4. **Documents** – every document tagged by region, governing body, jurisdiction, sector, type, legal level and year.
+5. **Any region** – documents carry a region. State-wide and NCR-wide documents apply to every region inside them.
+6. **Automatic intake** – give a link (Documents tab, or `data/sources.csv`) or drop a PDF in `source_pdfs/`. The
+   app downloads it, works out how to read it (real text, scan in English or Hindi, or Hindi in a legacy font),
+   suggests title, type, legal level, draft status, year and language, extracts the text and re-indexes.
 
 Not built yet: map-based filtering and spatial conflict checks (need boundary layers).
 
@@ -50,13 +48,15 @@ Without the model the app still works and shows passages, precedence and templat
 
 The findings are a planning aid, not legal advice. Check each one against the cited pages.
 
-## Adding documents
+## Adding documents and regions
 
-1. Put the PDF in a folder (the PDFs themselves are not stored in this repository).
-2. Add a row to `data/manifest.csv`. `method` is `text` (PDF has real text), `ocr` (scanned; set `ocr_lang` to `eng`
-   or `hin+eng`), `krutidev` (Hindi typeset in a Kruti Dev legacy font) or `none`.
-3. `python pipeline/extract.py <folder> <doc_id>` (needs poppler-utils and tesseract), then delete
-   `data/index.sqlite` and restart the app.
+- In the app: Documents tab, "Add a document": link, governing body, region.
+- In bulk: add rows to `data/sources.csv` (url, file, body, region, jurisdiction, sector) and run
+  `python pipeline/auto.py`. PDFs you already have go in `source_pdfs/`.
+- Needs poppler-utils and tesseract with the Hindi pack (`sudo apt install poppler-utils tesseract-ocr tesseract-ocr-hin`).
+- New rows in `data/manifest.csv` are marked `tagged_by=auto`. Check the suggested type, legal level and status,
+  because the order of precedence depends on them.
+- A new region needs its own precedence rules where its Acts differ: add them to `data/precedence.csv`.
 
 ## Known limits
 

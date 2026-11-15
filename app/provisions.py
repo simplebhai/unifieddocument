@@ -67,13 +67,43 @@ def best_blocks(text, cons, need):
             best = (score, span, "\n".join(lines[start:end]).strip(), len(present))
     return [best] if best else []
 
-def find(con, q, jurisdiction=None, sector=None):
+USES = {"Any": "", "Residential (plotted)": "residential", "Group housing": "group housing", "Commercial": "commercial",
+        "Industrial": "industry", "Institutional": "institutional", "Mixed use / TOD": "TOD",
+        "Warehousing and logistics": "warehousing", "Agriculture": "agriculture"}
+PARAMETERS = {"FAR": "FAR", "Ground coverage": "ground coverage", "Building height": "building height",
+              "Setbacks": "setback", "Density": "density", "Parking": "parking", "Road width": "road width",
+              "Plot size": "plot size", "Green belt": "green belt",
+              "Land-use conversion charges": "land use conversion charges", "Development fee": "development fee"}
+
+USE_FREE = {"Development fee"}          # rules that are not written per land use
+
+def rule_query(use, parameter):
+    u = "" if parameter in USE_FREE else USES.get(use, "")
+    return (u + " " + PARAMETERS.get(parameter, parameter)).strip()
+
+def matrix(con, use, region=None):
+    """For one land use: which body has a direct provision, a related mention, or nothing, per parameter."""
+    rows, bodies = [], None
+    for name, pq in PARAMETERS.items():
+        d = find(con, rule_query(use, name), None, None, region, model=False)
+        bodies = bodies or sorted(b["body"] for b in d["bodies"])
+        cells = {}
+        for b in d["bodies"]:
+            ps = b["provisions"]
+            cells[b["body"]] = {"state": "none"} if not ps else {
+                "state": "direct" if any(p["match"] == "direct" for p in ps) else "related",
+                "citation": ps[0]["citation"], "count": b["pages"]}
+        rows.append({"parameter": name, "cells": cells})
+    return {"use": use, "bodies": bodies or [], "rows": rows}
+
+def find(con, q, jurisdiction=None, sector=None, region=None, model=True):
     cons = concepts(q)
     if not cons:
         return {"query": q, "concepts": [], "bodies": []}
     docs = {r["doc_id"]: dict(r) for r in con.execute("select * from docs where status in ('core','adjacent')")}
     def allowed(d):
-        return ((not jurisdiction or any(j in d["jurisdiction"] for j in jurisdiction)) and
+        return ((not region or d["region"] in region or "(all regions)" in d["region"]) and
+                (not jurisdiction or any(j in d["jurisdiction"] for j in jurisdiction)) and
                 (not sector or any(s in d["sector"] for s in sector)))
     need = len(cons) if len(cons) <= 2 else len(cons) - 1          # long questions may miss one term
     rows = con.execute("select doc_id, page, text from passages where passages match ? order by bm25(passages) limit 600",
@@ -104,12 +134,13 @@ def find(con, q, jurisdiction=None, sector=None):
             if len(keep) < 2 and it not in keep:
                 keep.append(it)
         keep = sorted(keep, key=lambda x: -x["score"])[:4]
-        bodies.append({"body": b, "provisions": keep})
+        bodies.append({"body": b, "provisions": keep, "pages": len({(i["doc_id"], i["page"]) for i in items}),
+                       "direct_pages": len({(i["doc_id"], i["page"]) for i in items if i["match"] == "direct"})})
     bodies.sort(key=lambda x: (not x["provisions"], -(x["provisions"][0]["score"] if x["provisions"] else 0)))
     result = {"query": q, "concepts": [c["label"] for c in cons], "bodies": bodies,
               "highlight": "|".join(c["re"].pattern for c in cons), "model": None}
     import os
-    if os.environ.get("OLLAMA_MODEL") and any(b["provisions"] for b in bodies):
+    if model and os.environ.get("OLLAMA_MODEL") and any(b["provisions"] for b in bodies):
         n, ctx = 0, []
         for b in bodies:
             for p in b["provisions"][:2]:

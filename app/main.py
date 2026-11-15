@@ -37,21 +37,28 @@ def build_match(q: str):
             seen.add(t); out.append('"' + t.replace('"', "") + '"')
     return " OR ".join(out), [t.strip('"') for t in out]
 
-def filters(body, jurisdiction, sector, status, doc_type):
+def region_sql(region):
+    """A region also takes in the documents that apply to every region inside it (state-wide, NCR-wide)."""
+    if not region:
+        return "", []
+    return (" and (" + " or ".join("d.region = ?" for _ in region) + " or d.region like '%(all regions)')", list(region))
+
+def filters(body, jurisdiction, sector, status, doc_type, region=None):
     sql, args = [], []
     for col, vals in (("body", body), ("jurisdiction", jurisdiction), ("sector", sector),
                       ("status", status), ("doc_type", doc_type)):
         if vals:
             sql.append("(" + " or ".join(f"d.{col} like ?" for _ in vals) + ")")
             args += [f"%{v}%" for v in vals]
-    return (" and " + " and ".join(sql)) if sql else "", args
+    rs, ra = region_sql(region)
+    return ((" and " + " and ".join(sql)) if sql else "") + rs, args + ra
 
 @app.get("/api/docs")
 def docs():
     con = db()
     rows = [dict(r) for r in con.execute("select * from docs order by body, title")]
     facets = {}
-    for col in ("body", "jurisdiction", "sector", "doc_type", "status", "language"):
+    for col in ("region", "body", "jurisdiction", "sector", "doc_type", "status", "language"):
         vals = set()
         for r in rows:
             vals.update(v.strip() for v in r[col].split(";") if v.strip())
@@ -61,11 +68,11 @@ def docs():
 @app.get("/api/search")
 def search(q: str, body: list[str] = Query(None), jurisdiction: list[str] = Query(None),
            sector: list[str] = Query(None), status: list[str] = Query(None),
-           doc_type: list[str] = Query(None), limit: int = 30):
+           doc_type: list[str] = Query(None), limit: int = 30, region: list[str] = Query(None)):
     match, terms = build_match(q)
     if not match:
         return {"query": q, "terms": [], "results": []}
-    fsql, fargs = filters(body, jurisdiction, sector, status or ["core", "adjacent", "reference"], doc_type)
+    fsql, fargs = filters(body, jurisdiction, sector, status or ["core", "adjacent", "reference"], doc_type, region)
     con = db()
     rows = con.execute(
         "select p.doc_id, p.page, snippet(passages, 2, '<mark>', '</mark>', ' … ', 40) as snippet, "
@@ -112,18 +119,63 @@ def answer(q: str, body: list[str] = Query(None), jurisdiction: list[str] = Quer
         return {"enabled": True, "error": str(e)}
 
 @app.get("/api/provisions")
-def find_provisions(q: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None)):
+def find_provisions(q: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None),
+                    region: list[str] = Query(None)):
     """The exact provision each governing body has on the question, word for word, with document and page."""
-    return provisions.find(db(), q, jurisdiction, sector)
+    return provisions.find(db(), q, jurisdiction, sector, region)
+
+@app.get("/api/form")
+def form():
+    regions = sorted({r[0] for r in db().execute("select distinct region from docs") if "(all regions)" not in r[0] and r[0] != "General"})
+    return {"regions": regions, "uses": list(provisions.USES), "parameters": list(provisions.PARAMETERS)}
+
+@app.get("/api/rule")
+def rule(use: str = "Any", parameter: str = "FAR", region: list[str] = Query(None)):
+    """Standard form: region + land use + rule -> what each body provides."""
+    return provisions.find(db(), provisions.rule_query(use, parameter), None, None, region)
+
+@app.get("/api/matrix")
+def matrix(use: str = "Any", region: list[str] = Query(None)):
+    """Which body has a provision on which standard parameter, for one land use."""
+    return provisions.matrix(db(), use, region)
 
 @app.get("/api/topics")
 def topics():
     return {"topics": list(conflicts.TOPICS), "model": os.environ.get("OLLAMA_MODEL")}
 
 @app.get("/api/compare")
-def compare(topic: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None)):
+def compare(topic: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None),
+            region: list[str] = Query(None)):
     """Evidence by body on one topic, the order of precedence, and a suggested resolution and policy clause."""
-    return conflicts.compare(db(), search, topic, None, jurisdiction, sector)
+    return conflicts.compare(db(), search, topic, None, jurisdiction, sector, region)
+
+JOB = {"running": False, "log": []}
+
+@app.post("/api/add")
+def add_source(url: str, body: str, region: str, jurisdiction: str = "", sector: str = ""):
+    """Standard route for a new document: give its link and who issued it; the rest is automatic."""
+    import csv, sys, threading
+    if JOB["running"]:
+        return {"ok": False, "message": "Another document is still being processed."}
+    src = index.ROOT / "data" / "sources.csv"
+    with open(src, "a", encoding="utf-8", newline="") as f:
+        csv.writer(f).writerow([url, "", body, region, jurisdiction, sector])
+    def work():
+        JOB.update(running=True, log=[])
+        try:
+            sys.path.insert(0, str(index.ROOT / "pipeline"))
+            import auto
+            if auto.run(JOB["log"].append):
+                index.build()
+        except Exception as e:
+            JOB["log"].append(f"failed: {e}")
+        JOB["running"] = False
+    threading.Thread(target=work, daemon=True).start()
+    return {"ok": True}
+
+@app.get("/api/add/status")
+def add_status():
+    return JOB
 
 @app.get("/")
 def home():

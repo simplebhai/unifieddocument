@@ -90,13 +90,14 @@ def ask_model(prompt):
                                  headers={"Content-Type": "application/json"})
     return json.loads(json.loads(urllib.request.urlopen(req, timeout=900).read())["response"])
 
-def compare(con, search, topic, query=None, jurisdiction=None, sector=None):
+def compare(con, search, topic, query=None, jurisdiction=None, sector=None, region=None):
     q = query or TOPICS.get(topic, topic)
     docs = {r["doc_id"]: dict(r) for r in con.execute("select * from docs")}
-    bodies = sorted({d["body"] for d in docs.values() if d["status"] in ("core", "adjacent")})
+    in_region = lambda d: not region or d["region"] in region or "(all regions)" in d["region"]
+    bodies = sorted({d["body"] for d in docs.values() if d["status"] in ("core", "adjacent") and in_region(d)})
     evidence = []
     for b in bodies:
-        for h in search(q, [b], jurisdiction, sector, ["core", "adjacent"], None, 3)["results"]:
+        for h in search(q, [b], jurisdiction, sector, ["core", "adjacent"], None, 3, region)["results"]:
             text = con.execute("select text from passages where doc_id=? and page=?", (h["doc_id"], h["page"])).fetchone()[0]
             d = docs[h["doc_id"]]
             evidence.append({"n": len(evidence) + 1, "doc_id": h["doc_id"], "page": h["page"], "body": b, "title": d["title"],

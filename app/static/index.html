@@ -5,149 +5,277 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Multi-Agency Planning Document Platform</title>
 <style>
-  :root { --ink:#1c2430; --muted:#5d6878; --line:#d9dee6; --bg:#f5f6f8; --card:#fff; --accent:#1f5fa8; --mark:#ffe58a; }
+  :root { --ink:#0b0b0b; --muted:#52514e; --line:#dcdbd6; --bg:#f4f4f1; --card:#fcfcfb; --accent:#256abf; --mark:#ffe58a;
+          --series:#2a78d6; --direct:#256abf; --related:#86b6ef; --warn:#8a5d00; --warnline:#c98a00; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f0efec; --muted:#c3c2b7; --line:#3a3a37; --bg:#121211; --card:#1a1a19; --accent:#6da7ec; --mark:#6b5500;
+            --series:#3987e5; --direct:#3987e5; --related:#184f95; --warn:#f0c060; --warnline:#b98a20; }
+  }
   * { box-sizing:border-box; }
   body { margin:0; font:15px/1.5 system-ui, "Segoe UI", "Noto Sans", "Nirmala UI", sans-serif; color:var(--ink); background:var(--bg); }
-  header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:24px; align-items:baseline; flex-wrap:wrap; }
-  header h1 { font-size:18px; margin:0; }
-  nav button { background:none; border:0; font:inherit; padding:6px 2px; margin-right:16px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+  header { background:var(--card); border-bottom:1px solid var(--line); padding:12px 24px 0; }
+  header h1 { font-size:18px; margin:0 0 8px; }
+  nav button { background:none; border:0; font:inherit; padding:8px 2px; margin-right:20px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
   nav button.on { color:var(--accent); border-color:var(--accent); font-weight:600; }
-  main { display:grid; grid-template-columns:250px 1fr; gap:20px; padding:20px 24px; max-width:1300px; margin:auto; }
-  @media (max-width:800px) { main { grid-template-columns:1fr; } }
+  main { display:grid; grid-template-columns:240px minmax(0,1fr); gap:20px; padding:20px 24px; max-width:1320px; margin:auto; }
+  @media (max-width:820px) { main { grid-template-columns:1fr; } }
   aside { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; align-self:start; }
   aside h3 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:14px 0 6px; }
   aside h3:first-child { margin-top:0; }
   aside label { display:block; font-size:14px; padding:1px 0; cursor:pointer; }
-  .search { display:flex; gap:8px; margin-bottom:14px; }
-  .search input { flex:1; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:8px; }
-  .search button, .ghost { font:inherit; padding:10px 16px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
-  .ghost { background:#fff; color:var(--accent); padding:4px 10px; font-size:13px; }
-  .hint { color:var(--muted); font-size:13px; margin:0 0 14px; }
+  h2.sec { font-size:16px; margin:22px 0 8px; }
+  .row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:end; }
+  .row > div { display:flex; flex-direction:column; gap:3px; }
+  .row label { font-size:12px; color:var(--muted); }
+  input, select { font:inherit; color:var(--ink); background:var(--card); padding:9px 11px; border:1px solid var(--line); border-radius:8px; min-width:0; }
+  aside input { padding:0; }
+  .grow { flex:1; min-width:200px; }
+  button.go, .ghost { font:inherit; padding:9px 16px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
+  .ghost { background:transparent; color:var(--accent); padding:4px 10px; font-size:13px; }
+  .hint { color:var(--muted); font-size:13px; margin:0 0 12px; }
   .group { background:var(--card); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; }
-  .group > h2 { font-size:15px; margin:0; padding:10px 14px; border-bottom:1px solid var(--line); background:#fafbfc; border-radius:8px 8px 0 0; }
+  .group > h2 { font-size:15px; margin:0; padding:10px 14px; border-bottom:1px solid var(--line); border-radius:8px 8px 0 0; }
   .hit { padding:12px 14px; border-bottom:1px solid var(--line); }
   .hit:last-child { border-bottom:0; }
   .cite { font-weight:600; font-size:14px; }
   .tags { margin:4px 0 6px; }
-  .tag { display:inline-block; font-size:12px; border:1px solid var(--line); border-radius:10px; padding:0 8px; margin-right:4px; color:var(--muted); background:#fff; }
-  .tag.warn { border-color:#c98a00; color:#8a5d00; }
+  .tag { display:inline-block; font-size:12px; border:1px solid var(--line); border-radius:10px; padding:0 8px; margin:0 4px 2px 0; color:var(--muted); }
+  .tag.warn { border-color:var(--warnline); color:var(--warn); }
   .snip { font-size:14px; white-space:pre-wrap; word-break:break-word; }
-  mark { background:var(--mark); padding:0 1px; }
-  pre.full { white-space:pre-wrap; background:#fafbfc; border:1px solid var(--line); border-radius:6px; padding:10px; font:13px/1.5 inherit; max-height:420px; overflow:auto; margin:8px 0 0; }
-  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); font-size:14px; }
-  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); background:#fafbfc; }
-  .answer { background:#eef4fb; border:1px solid #c5d8ee; border-radius:8px; padding:12px 14px; margin-bottom:16px; white-space:pre-wrap; }
+  mark { background:var(--mark); color:inherit; padding:0 1px; }
+  pre.full { white-space:pre-wrap; border:1px solid var(--line); border-radius:6px; padding:10px; font:13px/1.5 inherit; max-height:320px; overflow:auto; margin:8px 0 0; }
+  table.t { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); font-size:14px; }
+  .t th, .t td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .t th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .answer { border:1px solid var(--line); border-left:3px solid var(--accent); background:var(--card); border-radius:8px; padding:12px 14px; margin-bottom:16px; white-space:pre-wrap; }
+  .chart { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:16px; }
+  .chart h4 { margin:0 0 2px; font-size:14px; }
+  .chart .sub { color:var(--muted); font-size:12px; margin:0 0 10px; }
+  .bar-row { display:grid; grid-template-columns:170px 1fr 34px; gap:10px; align-items:center; height:26px; font-size:13px; }
+  .bar-row .name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-track { height:14px; border-left:1px solid var(--line); }
+  .bar { height:14px; background:var(--series); border-radius:0 4px 4px 0; min-width:2px; }
+  .bar.zero { background:none; }
+  .bar-row .val { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .matrix { border-collapse:separate; border-spacing:2px; font-size:13px; width:100%; }
+  .matrix th { font-weight:500; color:var(--muted); font-size:12px; text-align:left; padding:4px 6px; vertical-align:bottom; }
+  .matrix td.p { padding:4px 6px; white-space:nowrap; }
+  .matrix td.c { text-align:center; border-radius:4px; padding:5px 4px; font-size:12px; cursor:pointer; min-width:70px; }
+  .c.direct { background:var(--direct); color:#fff; } .c.related { background:var(--related); color:#0b0b0b; }
+  @media (prefers-color-scheme: dark) { .c.related { color:#f0efec; } }
+  .c.none { color:var(--muted); cursor:default; border:1px dashed var(--line); }
+  .legend { font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 4px 0 12px; vertical-align:-1px; }
+  #tip { position:fixed; pointer-events:none; background:var(--ink); color:var(--bg); font-size:12px; padding:5px 8px; border-radius:5px; max-width:320px; display:none; z-index:9; }
 </style>
 </head>
 <body>
 <header>
   <h1>Multi-Agency Planning Document Platform</h1>
-  <nav><button id="t-search" class="on">Ask across documents</button><button id="t-cmp">Conflicts and alignment</button><button id="t-docs">Document repository</button></nav>
+  <nav>
+    <button id="t-rule" class="on">Rule lookup</button><button id="t-search">Ask a question</button>
+    <button id="t-cmp">Conflicts and alignment</button><button id="t-docs">Documents</button>
+  </nav>
 </header>
 <main>
   <aside id="filters"></aside>
   <section>
-    <div id="v-search">
-      <form class="search" id="form">
-        <input id="q" placeholder="e.g. What is proposed around RRTS stations in Modinagar and Meerut?" autofocus>
-        <button>Search</button>
+    <div id="v-rule">
+      <form id="rform">
+        <div class="row">
+          <div><label for="r-region">Region</label><select id="r-region"></select></div>
+          <div><label for="r-use">Land use or building type</label><select id="r-use"></select></div>
+          <div><label for="r-par">Rule</label><select id="r-par"></select></div>
+          <button class="go">Show the rule</button>
+        </div>
       </form>
-      <p class="hint" id="hint">Ask for a specific provision, e.g. "FAR for industry" or "land use conversion charges for commercial". The answer shows what each governing body provides, word for word, with document and PDF page.</p>
-      <div id="prov"></div>
+      <p class="hint">Pick a region, a land use and a rule. The answer shows what each governing body provides, word for word, with document and PDF page. State-wide and NCR-wide documents are included for every region inside them.</p>
+      <div id="r-matrix"></div>
+      <div id="r-out"></div>
+    </div>
+    <div id="v-search" hidden>
+      <form class="row" id="form">
+        <input id="q" class="grow" placeholder="e.g. FAR for industry, or land use conversion charges for commercial">
+        <button class="go">Search</button>
+      </form>
+      <p class="hint">Ask for a specific provision in your own words. English questions also reach the Hindi documents through a glossary of planning terms.</p>
       <div id="answer"></div>
+      <div id="prov"></div>
       <div id="results"></div>
     </div>
     <div id="v-cmp" hidden>
-      <form class="search" id="cform">
-        <select id="topic" style="font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px"></select>
-        <input id="ctopic" placeholder="or type your own topic, e.g. warehousing near Partapur">
-        <button>Compare bodies</button>
+      <form class="row" id="cform">
+        <select id="topic"></select>
+        <input id="ctopic" class="grow" placeholder="or type your own topic, e.g. warehousing near Partapur">
+        <button class="go">Compare bodies</button>
       </form>
       <p class="hint" id="chint"></p>
       <div id="cresults"></div>
     </div>
-    <div id="v-docs" hidden></div>
+    <div id="v-docs" hidden>
+      <div class="group"><h2>Add a document</h2><div class="hit">
+        <form id="aform">
+          <div class="row">
+            <div class="grow"><label for="a-url">Link to the PDF</label><input id="a-url" required placeholder="https://…/plan.pdf"></div>
+            <div><label for="a-body">Governing body</label><input id="a-body" required placeholder="e.g. Lucknow Development Authority"></div>
+            <div><label for="a-region">Region</label><input id="a-region" required placeholder="e.g. Lucknow"></div>
+            <div><label for="a-jur">Jurisdiction</label><input id="a-jur" placeholder="e.g. Lucknow city"></div>
+            <button class="go">Download and process</button>
+          </div>
+        </form>
+        <p class="hint" style="margin:0">The app downloads the file, works out how to read it (text, scan, or old Hindi font), suggests its type, year and legal level, and adds it to the index. Check the suggested tags in data/manifest.csv afterwards. You can also drop PDFs into the source_pdfs folder and run <code>python pipeline/auto.py</code>.</p>
+        <pre class="full" id="a-log" hidden></pre>
+      </div></div>
+      <div id="doclist"></div>
+    </div>
   </section>
 </main>
+<div id="tip"></div>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const FACETS = [['body','Governing body'],['jurisdiction','Jurisdiction'],['sector','Sector'],['doc_type','Document type']];
+const FACETS = [['region','Region'],['body','Governing body'],['jurisdiction','Jurisdiction'],['sector','Sector'],['doc_type','Document type']];
+const TABS = ['rule','search','cmp','docs'];
 let DOCS = [];
+const get = async (u, p) => (await fetch(u + (p ? '?' + p : ''))).json();
 
-function selected() {
+function selected(only) {
   const p = new URLSearchParams();
-  document.querySelectorAll('#filters input:checked').forEach(i => p.append(i.name, i.value));
+  document.querySelectorAll('#filters input:checked').forEach(i => { if (!only || only.includes(i.name)) p.append(i.name, i.value); });
   return p;
 }
-function methodTag(m, lang) {
-  if (m === 'ocr') return '<span class="tag warn">Scanned: text read by OCR, check figures against the PDF</span>';
+function methodTag(m) {
+  if (m === 'ocr') return '<span class="tag warn">Scanned: read by OCR, check figures against the PDF</span>';
   if (m === 'krutidev') return '<span class="tag">Hindi text converted from legacy font</span>';
   return '';
 }
+function show(tab) { TABS.forEach(t => { $('#v-' + t).hidden = t !== tab; $('#t-' + t).className = t === tab ? 'on' : ''; }); }
+TABS.forEach(t => $('#t-' + t).onclick = () => show(t));
+
+document.addEventListener('mousemove', e => {
+  const el = e.target.closest('[data-tip]'), tip = $('#tip');
+  if (!el) { tip.style.display = 'none'; return; }
+  tip.textContent = el.dataset.tip; tip.style.display = 'block';
+  tip.style.left = Math.min(e.clientX + 12, innerWidth - 330) + 'px'; tip.style.top = (e.clientY + 14) + 'px';
+});
+
+/* ---------- documents and filters ---------- */
 async function loadDocs() {
-  const d = await (await fetch('/api/docs')).json();
+  const d = await get('/api/docs');
   DOCS = d.docs;
+  const keep = selected();
   $('#filters').innerHTML = FACETS.map(([k, label]) =>
-    `<h3>${label}</h3>` + d.facets[k].map(v => `<label><input type="checkbox" name="${k}" value="${esc(v)}"> ${esc(v)}</label>`).join('')).join('');
-  $('#filters').addEventListener('change', () => { renderDocs(); if ($('#q').value.trim()) run(); });
+    `<h3>${label}</h3>` + d.facets[k].map(v => `<label><input type="checkbox" name="${k}" value="${esc(v)}"${keep.getAll(k).includes(v) ? ' checked' : ''}> ${esc(v)}</label>`).join('')).join('');
   renderDocs();
 }
+$('#filters').addEventListener('change', renderDocs);
 function renderDocs() {
   const sel = selected();
   const rows = DOCS.filter(d => FACETS.every(([k]) => { const want = sel.getAll(k); return !want.length || want.some(w => d[k].includes(w)); }));
-  $('#v-docs').innerHTML = `<p class="hint">${rows.length} of ${DOCS.length} documents.</p><table><tr><th>Document</th><th>Body</th><th>Jurisdiction</th><th>Sector</th><th>Type</th><th>Year / horizon</th><th>Language</th><th>Pages</th><th>Status</th></tr>` +
-    rows.map(d => `<tr><td><b>${esc(d.title)}</b><br><span class="hint">${esc(d.file)}</span>${d.chars == 0 ? '<br><span class="tag warn">No searchable text</span>' : ''}</td><td>${esc(d.body)}</td><td>${esc(d.jurisdiction)}</td><td>${esc(d.sector)}</td><td>${esc(d.doc_type)}</td><td>${esc(d.year || '–')} / ${esc(d.horizon || '–')}</td><td>${esc(d.language)}</td><td>${d.pages || '–'}</td><td>${esc(d.status)}</td></tr>`).join('') + '</table>';
+  $('#doclist').innerHTML = `<p class="hint">${rows.length} of ${DOCS.length} documents.</p><table class="t"><tr><th>Document</th><th>Body</th><th>Region</th><th>Type and legal level</th><th>Year / horizon</th><th>Language</th><th>Pages</th></tr>` +
+    rows.map(d => `<tr><td><b>${esc(d.title)}</b><br><span class="hint">${esc(d.file)}</span>${d.chars == 0 ? '<br><span class="tag warn">No searchable text</span>' : ''}${d.tagged_by === 'auto' ? '<br><span class="tag warn">Tags suggested automatically, please check</span>' : ''}</td><td>${esc(d.body)}</td><td>${esc(d.region)}<br><span class="hint">${esc(d.jurisdiction)}</span></td><td>${esc(d.doc_type)}<br><span class="hint">${esc(d.legal_status)}</span></td><td>${esc(d.year || '–')} / ${esc(d.horizon || '–')}</td><td>${esc(d.language)}</td><td>${d.pages || '–'}</td></tr>`).join('') + '</table>';
 }
+$('#aform').addEventListener('submit', async e => {
+  e.preventDefault();
+  const p = new URLSearchParams({url: $('#a-url').value, body: $('#a-body').value, region: $('#a-region').value, jurisdiction: $('#a-jur').value});
+  const r = await (await fetch('/api/add?' + p, {method: 'POST'})).json();
+  const log = $('#a-log'); log.hidden = false; log.textContent = r.ok ? 'Started…' : r.message;
+  if (!r.ok) return;
+  const poll = setInterval(async () => {
+    const s = await get('/api/add/status');
+    log.textContent = s.log.join('\n') || 'Working…';
+    if (!s.running) { clearInterval(poll); loadDocs(); loadForm(); }
+  }, 2000);
+});
+
+/* ---------- provisions (used by Rule lookup and Ask) ---------- */
+function barChart(d) {
+  const max = Math.max(1, ...d.bodies.map(b => b.pages));
+  return `<div class="chart"><h4>Pages carrying a matching provision, by governing body</h4>
+    <p class="sub">Looked for: ${d.concepts.map(esc).join(' + ')}. Counts are pages, not rules; the extracts below are the evidence.</p>` +
+    d.bodies.map(b => `<div class="bar-row" data-tip="${esc(b.body)}: ${b.pages} page(s), of which ${b.direct_pages} with the terms side by side">
+      <div class="name">${esc(b.body)}</div>
+      <div class="bar-track"><div class="bar${b.pages ? '' : ' zero'}" style="width:${b.pages / max * 100}%"></div></div>
+      <div class="val">${b.pages || '–'}</div></div>`).join('') + '</div>';
+}
+function renderProv(d, target, title) {
+  if (!d.bodies || !d.bodies.length) { $(target).innerHTML = '<p class="hint">Nothing to show for this question.</p>'; return; }
+  let hl = null; try { hl = new RegExp(d.highlight, 'g'); } catch (e) {}
+  const mark = t => { if (!hl) return esc(t); try { return esc(t.replace(hl, m => '\u0001' + m + '\u0002')).replace(/\u0001/g, '<mark>').replace(/\u0002/g, '</mark>'); } catch (e) { return esc(t); } };
+  const withP = d.bodies.filter(b => b.provisions.length), without = d.bodies.filter(b => !b.provisions.length);
+  let h = `<h2 class="sec">${esc(title)}</h2>` + barChart(d);
+  if (d.model) h += `<p class="hint">One-line statements are written by the local model "${esc(d.model)}" from the extract beneath them. The extract is the authority.</p>`;
+  h += withP.map(b => `<div class="group"><h2>${esc(b.body)} says</h2>` + b.provisions.map(p =>
+    `<div class="hit">${p.says ? `<div class="snip" style="font-size:15px;margin-bottom:6px"><b>${esc(p.says)}</b></div>` : ''}
+     <div class="cite">${esc(p.title)}, PDF page ${p.page}</div>
+     <div class="tags"><span class="tag">${esc(p.level)}</span><span class="tag">${esc(p.legal_status)}</span><span class="tag">${esc(p.jurisdiction)}</span>${p.match === 'nearby' ? '<span class="tag warn">Related mention, not a direct provision</span>' : ''}${methodTag(p.method)}</div>
+     <pre class="full">${mark(p.text)}</pre></div>`).join('') + '</div>').join('');
+  if (!withP.length) h += '<p class="hint">No provision found where these terms occur together.</p>';
+  if (without.length) h += `<p class="hint">No provision found in the loaded documents of: ${without.map(b => esc(b.body)).join(', ')}.</p>`;
+  $(target).innerHTML = h;
+}
+
+/* ---------- rule lookup ---------- */
+async function loadForm() {
+  const f = await get('/api/form');
+  const keep = $('#r-region').value;
+  $('#r-region').innerHTML = '<option value="">All regions</option>' + f.regions.map(r => `<option${r === keep ? ' selected' : ''}>${esc(r)}</option>`).join('');
+  if (!$('#r-use').options.length) {
+    $('#r-use').innerHTML = f.uses.map(u => `<option${u === 'Industrial' ? ' selected' : ''}>${esc(u)}</option>`).join('');
+    $('#r-par').innerHTML = f.parameters.map(u => `<option>${esc(u)}</option>`).join('');
+  }
+  loadMatrix();
+}
+function ruleParams() { const p = new URLSearchParams(); if ($('#r-region').value) p.append('region', $('#r-region').value); p.set('use', $('#r-use').value); return p; }
+async function loadMatrix() {
+  const m = await get('/api/matrix', ruleParams());
+  const label = {direct: 'Provision', related: 'Mention', none: '–'};
+  $('#r-matrix').innerHTML = `<div class="chart"><h4>Where the rules are: ${esc(m.use)}</h4>
+    <p class="sub">Each cell shows whether that body's loaded documents carry the rule. Click a cell to read it.</p>
+    <div style="overflow-x:auto"><table class="matrix"><tr><th></th>${m.bodies.map(b => `<th>${esc(b)}</th>`).join('')}</tr>` +
+    m.rows.map(r => `<tr><td class="p">${esc(r.parameter)}</td>` + m.bodies.map(b => { const c = r.cells[b] || {state: 'none'};
+      return `<td class="c ${c.state}" data-par="${esc(r.parameter)}" ${c.citation ? `data-tip="${esc(c.citation)}${c.count > 1 ? ' and ' + (c.count - 1) + ' more page(s)' : ''}"` : ''}>${label[c.state]}</td>`; }).join('') + '</tr>').join('') +
+    `</table></div><div class="legend"><i style="background:var(--direct);margin-left:0"></i>Provision: the terms occur side by side<i style="background:var(--related)"></i>Mention: nearby only, read with care</div></div>`;
+}
+async function runRule() {
+  const p = ruleParams(); p.set('parameter', $('#r-par').value);
+  $('#r-out').innerHTML = '<p class="hint">Looking up…</p>';
+  const d = await get('/api/rule', p);
+  renderProv(d, '#r-out', `${$('#r-par').value}: ${$('#r-use').value}${$('#r-region').value ? ', ' + $('#r-region').value : ''}`);
+}
+$('#rform').addEventListener('submit', e => { e.preventDefault(); runRule(); });
+$('#r-use').addEventListener('change', loadMatrix); $('#r-region').addEventListener('change', loadMatrix);
+$('#r-matrix').addEventListener('click', async e => { const c = e.target.closest('td.c'); if (!c || c.classList.contains('none')) return; $('#r-par').value = c.dataset.par; await runRule(); $('#r-out').scrollIntoView({behavior: 'smooth'}); });
+
+/* ---------- ask ---------- */
 async function run() {
   const q = $('#q').value.trim(); if (!q) return;
   const p = selected(); p.set('q', q);
   $('#results').innerHTML = '<p class="hint">Searching…</p>'; $('#answer').innerHTML = ''; $('#prov').innerHTML = '';
-  const pp = new URLSearchParams(); pp.set('q', q);
-  p.forEach((v, k) => { if (k === 'jurisdiction' || k === 'sector') pp.append(k, v); });
-  fetch('/api/provisions?' + pp).then(r => r.json()).then(renderProv).catch(() => {});
-  const d = await (await fetch('/api/search?' + p)).json();
+  const pp = selected(['region', 'jurisdiction', 'sector']); pp.set('q', q);
+  get('/api/provisions', pp).then(d => renderProv(d, '#prov', 'What each governing body provides')).catch(() => {});
+  const d = await get('/api/search', p);
   if (!d.results.length) { $('#results').innerHTML = '<p class="hint">No passages found. Try fewer or different words, or clear the filters.</p>'; return; }
-  const groups = {};
-  d.results.forEach(r => (groups[r.body] ??= []).push(r));
-  $('#results').innerHTML = `<h3 style="margin:22px 0 4px">Other matching passages</h3><p class="hint">${d.results.length} passages from ${Object.keys(groups).length} governing bodies.</p>` +
+  const groups = {}; d.results.forEach(r => (groups[r.body] ??= []).push(r));
+  $('#results').innerHTML = `<h2 class="sec">Other matching passages</h2><p class="hint">${d.results.length} passages from ${Object.keys(groups).length} governing bodies.</p>` +
     Object.entries(groups).map(([body, hits]) => `<div class="group"><h2>${esc(body)}</h2>` + hits.map(h =>
       `<div class="hit"><div class="cite">${esc(h.title)}, PDF page ${h.page}</div>
        <div class="tags"><span class="tag">${esc(h.jurisdiction)}</span><span class="tag">${esc(h.doc_type)}${h.year ? ' ' + esc(h.year) : ''}</span><span class="tag">${esc(h.language)}</span>${methodTag(h.method)}</div>
        <div class="snip">${h.snippet.replace(/<(?!\/?mark>)/g, '&lt;')}</div>
        <button class="ghost" data-doc="${esc(h.doc_id)}" data-page="${h.page}" style="margin-top:8px">Show full page text</button></div>`).join('') + '</div>').join('');
-  fetch('/api/answer?' + p).then(r => r.json()).then(a => {
-    if (a.enabled && a.answer) $('#answer').innerHTML = `<div class="answer"><b>Summary from local model (check against the passages below)</b>\n${esc(a.answer)}</div>`;
-  }).catch(() => {});
+  get('/api/answer', p).then(a => { if (a.enabled && a.answer) $('#answer').innerHTML = `<div class="answer"><b>Summary from the local model (check against the extracts below)</b>\n${esc(a.answer)}</div>`; }).catch(() => {});
 }
-function renderProv(d) {
-  if (!d.bodies || !d.bodies.length) return;
-  let hl; try { hl = new RegExp(d.highlight, 'g'); } catch (e) { hl = null; }
-  const mark = t => { const x = esc(t); if (!hl) return x; try { return esc(t.replace(hl, m => '\u0001' + m + '\u0002')).replace(/\u0001/g, '<mark>').replace(/\u0002/g, '</mark>'); } catch (e) { return x; } };
-  const withP = d.bodies.filter(b => b.provisions.length), without = d.bodies.filter(b => !b.provisions.length);
-  let h = `<h3 style="margin:0 0 4px">What each governing body provides</h3><p class="hint">Looked for: ${d.concepts.map(esc).join(' + ')}. ${d.model ? 'One-line statements are written by the local model "' + esc(d.model) + '" from the extract beneath them; the extract is the authority.' : 'Extracts are word for word from the documents.'}</p>`;
-  h += withP.map(b => `<div class="group"><h2>${esc(b.body)} says</h2>` + b.provisions.map(p =>
-    `<div class="hit">${p.says ? `<div class="snip" style="font-size:15px;margin-bottom:6px"><b>${esc(p.says)}</b></div>` : ''}
-     <div class="cite">${esc(p.title)}, PDF page ${p.page}</div>
-     <div class="tags"><span class="tag">${esc(p.level)}</span><span class="tag">${esc(p.legal_status)}</span><span class="tag">${esc(p.jurisdiction)}</span>${p.match === 'nearby' ? '<span class="tag warn">Related mention, not a direct provision</span>' : ''}${methodTag(p.method)}</div>
-     <pre class="full" style="max-height:300px">${mark(p.text)}</pre></div>`).join('') + '</div>').join('');
-  if (!withP.length) h += '<p class="hint">No provision found where all these terms occur together. See the passages below, or use fewer words.</p>';
-  if (without.length) h += `<p class="hint">No provision found in the loaded documents of: ${without.map(b => esc(b.body)).join(', ')}.</p>`;
-  $('#prov').innerHTML = h;
-}
+$('#form').addEventListener('submit', e => { e.preventDefault(); run(); });
 $('#results').addEventListener('click', async e => {
   const b = e.target.closest('button[data-doc]'); if (!b) return;
   if (b.nextElementSibling) { b.nextElementSibling.remove(); return; }
-  const d = await (await fetch(`/api/page?doc_id=${encodeURIComponent(b.dataset.doc)}&page=${b.dataset.page}`)).json();
+  const d = await get('/api/page', new URLSearchParams({doc_id: b.dataset.doc, page: b.dataset.page}));
   const pre = document.createElement('pre'); pre.className = 'full'; pre.textContent = d.text; b.after(pre);
 });
-$('#form').addEventListener('submit', e => { e.preventDefault(); run(); });
-function show(tab) { ['search','cmp','docs'].forEach(t => { $('#v-' + t).hidden = t !== tab; $('#t-' + t).className = t === tab ? 'on' : ''; }); }
-['search','cmp','docs'].forEach(t => $('#t-' + t).onclick = () => show(t));
 
+/* ---------- conflicts ---------- */
 async function loadTopics() {
-  const d = await (await fetch('/api/topics')).json();
+  const d = await get('/api/topics');
   $('#topic').innerHTML = d.topics.map(t => `<option>${esc(t)}</option>`).join('');
   $('#chint').textContent = d.model
     ? `Local model "${d.model}" is on: it judges conflicts and drafts clauses. The order of precedence always comes from the rule table, not from the model. Review every finding against the cited pages.`
@@ -155,11 +283,11 @@ async function loadTopics() {
 }
 async function runCompare() {
   const topic = $('#ctopic').value.trim() || $('#topic').value;
-  const p = new URLSearchParams(); p.set('topic', topic);
-  selected().forEach((v, k) => { if (k === 'jurisdiction' || k === 'sector') p.append(k, v); });
+  const p = selected(['region', 'jurisdiction', 'sector']); p.set('topic', topic);
   $('#cresults').innerHTML = '<p class="hint">Comparing… with a local model this can take a few minutes.</p>';
-  const d = await (await fetch('/api/compare?' + p)).json();
+  const d = await get('/api/compare', p);
   const cite = n => { const e = d.evidence.find(x => x.n === n); return e ? `[${n}] ${esc(e.citation)}` : ''; };
+  const groups = {}; d.evidence.forEach(e => (groups[e.body] ??= []).push(e));
   let h = '';
   if (d.model_error) h += `<p class="hint">The local model did not answer (${esc(d.model_error)}). Showing the rule-based view.</p>`;
   if (d.findings) {
@@ -180,16 +308,15 @@ async function runCompare() {
      ${p.note ? `<div class="tags"><span class="tag warn">${esc(p.note)}</span></div>` : ''}
      ${p.template_clause ? `<div class="snip"><b>Template clause:</b> ${esc(p.template_clause)}</div>` : ''}</div>`).join('')
     : '<div class="hit">Only one body has material on this topic.</div>') + '</div>';
-  const groups = {}; d.evidence.forEach(e => (groups[e.body] ??= []).push(e));
   h += Object.entries(groups).map(([body, ev]) => `<div class="group"><h2>${esc(body)}</h2>` + ev.map(e =>
     `<div class="hit"><div class="cite">[${e.n}] ${esc(e.title)}, PDF page ${e.page}</div>
      <div class="tags"><span class="tag">${esc(e.level)}</span><span class="tag">${esc(e.legal_status)}</span>${methodTag(e.method)}</div>
-     <div class="snip">${e.snippet.replace(/<(?!\/?mark>)/g, '&lt;')}</div>
-     ${e.figures.length ? `<div class="hint" style="margin:6px 0 0">Figures found: ${e.figures.map(f => `${esc(f.what)} ${esc(f.value)}`).join('; ')}</div>` : ''}</div>`).join('') + '</div>').join('');
+     <div class="snip">${e.snippet.replace(/<(?!\/?mark>)/g, '&lt;')}</div></div>`).join('') + '</div>').join('');
   $('#cresults').innerHTML = h || '<p class="hint">Nothing found on this topic.</p>';
 }
 $('#cform').addEventListener('submit', e => { e.preventDefault(); runCompare(); });
-loadDocs(); loadTopics();
+
+loadDocs(); loadTopics(); loadForm();
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "index.sqlite"
 COLS = ["doc_id", "file", "title", "body", "jurisdiction", "sector", "doc_type", "year", "horizon",
-        "language", "status", "method", "level", "legal_status"]
+        "language", "status", "method", "level", "legal_status", "region", "tagged_by"]
 
 def build(db_path=DB):
     if db_path.exists(): db_path.unlink()
@@ -21,7 +21,7 @@ def build(db_path=DB):
                 r = json.loads(line); n += 1; chars += len(r["text"])
                 if r["text"].strip():
                     con.execute("insert into passages values (?,?,?)", (row["doc_id"], r["page"], r["text"]))
-        con.execute(f"insert into docs values ({','.join('?' * (len(COLS) + 2))})", [row[c] for c in COLS] + [n, chars])
+        con.execute(f"insert into docs values ({','.join('?' * (len(COLS) + 2))})", [row.get(c, "") for c in COLS] + [n, chars])
     con.commit(); con.close()
     return db_path
 
