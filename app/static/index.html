@@ -60,7 +60,7 @@
   .bar-row .val { color:var(--muted); font-variant-numeric:tabular-nums; }
   .matrix { border-collapse:separate; border-spacing:2px; font-size:13px; width:100%; }
   .matrix th { font-weight:500; color:var(--muted); font-size:12px; text-align:left; padding:4px 6px; vertical-align:bottom; }
-  .matrix td.p { padding:4px 6px; white-space:nowrap; }
+  .matrix td.p { padding:4px 6px; white-space:nowrap; text-align:left; min-width:0; border-radius:0; }
   .matrix td.c { text-align:center; border-radius:4px; padding:5px 4px; font-size:12px; cursor:pointer; min-width:70px; }
   .c.direct { background:var(--direct); color:#fff; } .c.related { background:var(--related); color:#0b0b0b; }
   @media (prefers-color-scheme: dark) { .c.related { color:#f0efec; } }
@@ -75,6 +75,7 @@
   .where h3 { margin:0 0 6px; font-size:15px; } .where ul { margin:6px 0 10px; padding-left:18px; } .where li { margin:2px 0; }
   .cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
   .cats button { font:inherit; padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; }
+  .matrix td.c.sel { outline:2px solid var(--ink); outline-offset:-2px; } .matrix th.sel { color:var(--accent); } .matrix td.c.p { text-align:left; min-width:0; border-radius:0; cursor:pointer; } .matrix td.p.c:hover { color:var(--accent); }
   .cats button .n { font-size:11px; opacity:.7; margin-left:4px; }
   .cats button.on { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
   .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; align-items:start; }
@@ -126,16 +127,19 @@
       <div class="cards" id="mx-cards"></div>
     </div>
     <div id="v-rule" hidden>
-      <form class="row" id="rform">
-        <input id="r-q" class="grow" placeholder="e.g. parking for hospitals, solar plant size, shelter fee, green verge, subdivision">
-        <button class="go">Find</button>
+      <form id="rform">
+        <div class="row">
+          <div><label for="r-region">Region</label><select id="r-region"></select></div>
+          <div><label for="r-use">Land use or building type</label><select id="r-use"></select></div>
+          <div><label for="r-cat">Rule</label><select id="r-cat"></select></div>
+          <div><label for="r-body">Governing body</label><select id="r-body"></select></div>
+          <button class="go">Show the rule</button>
+        </div>
+        <div class="row"><input id="r-q" class="grow" placeholder="or search the rules: parking for hospitals, solar, shelter fee, green verge, subdivision"><button class="go ghost" type="submit">Find</button></div>
       </form>
-      <div class="row">
-        <div><label for="r-cat">Planning parameter</label><select id="r-cat"></select></div>
-        <div><label for="r-use">Land use or building type</label><select id="r-use"></select></div>
-        <div><label for="r-body">Governing body</label><select id="r-body"></select></div>
-      </div>
-      <p class="hint" id="r-hint">Searches the curated rules, each with its document, legal standing and PDF page. It does not search raw page text; use Ask a question for that.</p>
+      <p class="hint">Pick a region, a land use and a rule, or click a cell in the grid. Every answer is a page-cited rule from a loaded document, with its legal standing. State-wide and NCR-wide documents count for every region inside them.</p>
+      <div id="r-matrix"></div>
+      <p class="hint" id="r-hint"></p>
       <div class="cards" id="r-out"></div>
     </div>
     <div id="v-search" hidden>
@@ -262,29 +266,43 @@ function flagHtml(f, rules) {
 
 /* ---------- find a rule ---------- */
 let RF = null;
-async function findRules() {
-  const p = new URLSearchParams({q: $('#r-q').value, category: $('#r-cat').value, use: $('#r-use').value || 'all', body: $('#r-body').value});
-  const d = await get('/api/rules', p);
+const rsel = id => $('#' + id).value;
+async function loadRuleGrid() {
+  const g = await get('/api/rulegrid', new URLSearchParams({use: rsel('r-use') || 'all', region: rsel('r-region')}));
   if (!RF) {
     RF = true;
-    $('#r-cat').innerHTML = '<option value="">All parameters</option>' + d.categories.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('');
-    $('#r-use').innerHTML = d.uses.map(u => `<option value="${u.id}">${esc(u.label)}</option>`).join('');
-    $('#r-body').innerHTML = '<option value="">All bodies</option>' + d.bodies.map(b => `<option>${esc(b)}</option>`).join('');
+    $('#r-region').innerHTML = '<option value="">All regions</option>' + g.regions.map(r => `<option>${esc(r)}</option>`).join('');
+    $('#r-use').innerHTML = g.uses.map(u => `<option value="${u.id}"${u.id === 'industrial' ? ' selected' : ''}>${esc(u.label)}</option>`).join('');
+    $('#r-cat').innerHTML = '<option value="">All rules</option>' + g.categories.map(c => `<option value="${c.id}">${esc(c.label)}</option>`).join('');
+    $('#r-body').innerHTML = '<option value="">All bodies</option>' + g.bodies.map(b => `<option>${esc(b)}</option>`).join('');
+    return loadRuleGrid();
   }
-  const browsing = !$('#r-q').value.trim() && !$('#r-cat').value && !$('#r-body').value && ($('#r-use').value || 'all') === 'all';
-  const gaps = d.gaps.length ? `<p class="hint" style="grid-column:1/-1">No figures available from ${d.gaps.length} document${d.gaps.length > 1 ? 's' : ''} on this (map sheets or scans): ${[...new Set(d.gaps.map(g => g.doc_title))].map(esc).join('; ')}.</p>` : '';
-  if (browsing) {
-    $('#r-hint').textContent = `${d.cards.length} rules with figures or conditions. Pick one, or search above.`;
-    const by = {}; d.cards.forEach(c => (by[c.category_label] ??= []).push(c));
-    $('#r-out').innerHTML = Object.entries(by).map(([k, v]) => `<div class="rcard" style="grid-column:1/-1"><header><h3>${esc(k)}</h3></header><div class="in"><ul>` + v.map(c => `<li><a href="#" data-find="${esc(c.title)}">${esc(c.title)}</a> <span class="hint">${esc(c.body)}${c.draft ? ', draft' : ''}</span></li>`).join('') + '</ul></div></div>').join('') + gaps;
-    return;
-  }
-  $('#r-hint').textContent = d.cards.length ? `${d.cards.length} rule${d.cards.length > 1 ? 's' : ''} found. Each shows its document, legal standing (hover the grey label) and PDF page.` : 'No curated rule matches. Try fewer words, or use Ask a question to search the full text of every document.';
-  $('#r-out').innerHTML = d.cards.map(c => cardHtml(c)).join('') + (d.also.length ? `<p class="hint" style="grid-column:1/-1">Also mentioned in the conditions of: ${d.also.map(a => `<a href="#" data-find="${esc(a.title)}">${esc(a.title)}</a>`).join(', ')}.</p>` : '') + gaps;
+  const useLabel = g.uses.find(u => u.id === (rsel('r-use') || 'all')).label, cat = rsel('r-cat'), body = rsel('r-body');
+  $('#r-matrix').innerHTML = `<div class="chart"><h4>Where the rules are: ${esc(useLabel)}${rsel('r-region') ? ', ' + esc(rsel('r-region')) : ''}</h4>
+    <p class="sub">Each cell counts the page-cited rules that body's documents give for the row. Click a cell to read them; click a row heading for all bodies.</p>
+    <div style="overflow-x:auto"><table class="matrix"><tr><th></th>${g.bodies.map(b => `<th class="${b === body ? 'sel' : ''}">${esc(b)}</th>`).join('')}</tr>` +
+    g.categories.map(c => `<tr><td class="p c" data-cat="${c.id}" data-body="">${esc(c.label)}</td>` + g.bodies.map(b => {
+      const x = (g.grid[c.id] || {})[b]; const on = c.id === cat && (!body || b === body);
+      if (!x) return `<td class="c none">–</td>`;
+      const st = x.figures ? 'direct' : 'related';
+      return `<td class="c ${st}${on ? ' sel' : ''}" data-cat="${c.id}" data-body="${esc(b)}" data-tip="${esc(x.titles.join('; '))}">${x.figures ? 'Rule' + (x.figures > 1 ? ' ×' + x.figures : '') + (x.notes ? ' +' + x.notes + ' note' : '') : 'Note' + (x.notes > 1 ? ' ×' + x.notes : '')}</td>`; }).join('') + '</tr>').join('') +
+    `</table></div><div class="legend"><i style="background:var(--direct);margin-left:0"></i>Rule: figures or conditions, cited to a page<i style="background:var(--related)"></i>Note: map sheet, scan or statement only, no figures</div></div>`;
 }
-$('#r-out').addEventListener('click', e => { const a = e.target.closest('a[data-find]'); if (!a) return; e.preventDefault(); $('#r-q').value = a.dataset.find; findRules(); });
-$('#rform').addEventListener('submit', e => { e.preventDefault(); findRules(); });
-['r-cat', 'r-use', 'r-body'].forEach(id => $('#' + id).addEventListener('change', findRules));
+async function findRules() {
+  const p = new URLSearchParams({q: rsel('r-q'), category: rsel('r-cat'), use: rsel('r-use') || 'all', body: rsel('r-body'), region: rsel('r-region')});
+  const d = await get('/api/rules', p);
+  const what = [d.categories.find(c => c.id === rsel('r-cat'))?.label || (rsel('r-q') ? `"${rsel('r-q')}"` : 'All rules'), d.uses.find(u => u.id === (rsel('r-use') || 'all')).label, rsel('r-body') || 'all bodies', rsel('r-region') || 'all regions'].join(' · ');
+  const gaps = d.gaps.length ? `<p class="hint" style="grid-column:1/-1">No figures available from: ${[...new Set(d.gaps.map(g => g.doc_title))].map(esc).join('; ')} (map sheets or scans).</p>` : '';
+  $('#r-hint').textContent = `${what}: ${d.cards.length ? d.cards.length + ' rule' + (d.cards.length > 1 ? 's' : '') + '. Hover the grey label for legal standing.' : 'no page-cited rule in the loaded documents. A gap, not proof that no rule exists.'}`;
+  $('#r-out').innerHTML = d.cards.map(c => cardHtml(c)).join('') + (d.also.length ? `<p class="hint" style="grid-column:1/-1">Also mentioned in: ${d.also.map(a => `<a href="#" data-find="${esc(a.title)}">${esc(a.title)}</a>`).join(', ')}.</p>` : '') + gaps;
+  loadRuleGrid();
+}
+$('#rform').addEventListener('submit', e => { e.preventDefault(); if (e.submitter && e.submitter.textContent === 'Find' && $('#r-q').value.trim()) { $('#r-cat').value = ''; $('#r-body').value = ''; } findRules(); });
+$('#r-q').addEventListener('input', () => { if ($('#r-q').value.trim()) { $('#r-cat').value = ''; $('#r-body').value = ''; } });
+['r-cat', 'r-body'].forEach(id => $('#' + id).addEventListener('change', () => { $('#r-q').value = ''; findRules(); }));
+['r-use', 'r-region'].forEach(id => $('#' + id).addEventListener('change', findRules));
+$('#r-matrix').addEventListener('click', e => { const c = e.target.closest('td.c[data-cat]'); if (!c) return; $('#r-q').value = ''; $('#r-cat').value = c.dataset.cat; $('#r-body').value = c.dataset.body; findRules(); $('#r-hint').scrollIntoView({behavior: 'smooth', block: 'start'}); });
+$('#r-out').addEventListener('click', e => { const a = e.target.closest('a[data-find]'); if (!a) return; e.preventDefault(); $('#r-q').value = a.dataset.find; $('#r-cat').value = ''; $('#r-body').value = ''; findRules(); });
 
 /* ---------- conflicts overview ---------- */
 async function loadOverview() {
@@ -449,7 +467,7 @@ async function loadMatrixCards() {
 $('#mx-cats').addEventListener('click', e => { const b = e.target.closest('button[data-cat]'); if (!b) return; MX.cat = b.dataset.cat; loadMatrixCards(); });
 
 document.body.classList.add('wide');
-loadDocs(); loadTopics(); loadOverview(); findRules(); initMatrix();
+loadDocs(); loadTopics(); loadOverview(); loadRuleGrid().then(findRules); initMatrix();
 </script>
 </body>
 </html>

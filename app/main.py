@@ -220,7 +220,7 @@ def _card_text(c):
 
 
 @app.get("/api/rules")
-def rules_search(q: str = "", category: str = "", use: str = "all", body: str = ""):
+def rules_search(q: str = "", category: str = "", use: str = "all", body: str = "", region: str = ""):
     """Search the curated, page-cited rules (not raw page text). Every word of the query must appear in a card."""
     reg, docs = _reg(), _docs()
     words = [w for w in re.findall(r"[a-z0-9.%]+", q.lower()) if w not in GLOSS_STOP and len(w) > 1]
@@ -233,6 +233,9 @@ def rules_search(q: str = "", category: str = "", use: str = "all", body: str = 
             continue
         e = _enrich(c, docs)
         if body and e["body"] != body:
+            continue
+        r = docs[c["doc_id"]]["region"] or ""
+        if region and not (region in r or "all regions" in r or r == "General"):
             continue
         text = _card_text(c) + " " + e["body"].lower() + " " + catlabel[c["category"]].lower()
         tokens = set(re.findall(r"[a-z0-9]+", text.replace("floor area ratio", "far").replace("fsi", "far").replace("transit oriented", "tod").replace("equivalent car space", "ecs")))
@@ -253,6 +256,27 @@ def rules_search(q: str = "", category: str = "", use: str = "all", body: str = 
         out = [c for c in out if c["primary"]]
     return {"cards": out, "gaps": gaps, "also": also, "categories": reg["categories"], "uses": reg["uses"],
             "bodies": sorted({docs[c["doc_id"]]["body"] for c in reg["cards"]}), "words": words}
+
+
+@app.get("/api/rulegrid")
+def rulegrid(use: str = "all", region: str = ""):
+    """Bodies x planning parameters, from the curated rules: figures, note only, or nothing."""
+    reg, docs = _reg(), _docs()
+    def in_region(d):
+        r = d["region"] or ""
+        return not region or region in r or "all regions" in r or r == "General"
+    grid, bodies = {}, set()
+    for c in reg["cards"]:
+        d = docs[c["doc_id"]]
+        if not in_region(d) or (use != "all" and c["uses"] and use not in c["uses"]):
+            continue
+        bodies.add(d["body"])
+        cell = grid.setdefault(c["category"], {}).setdefault(d["body"], {"figures": 0, "notes": 0, "titles": []})
+        kind = "figures" if (c["tables"] or c["conditions"]) and c["quality"] not in ("ocr", "map") else "notes"
+        cell[kind] += 1
+        cell["titles"].append(c["title"])
+    regions = sorted({r for d in docs.values() for r in [d["region"]] if r and "all regions" not in r and r != "General"})
+    return {"categories": reg["categories"], "uses": reg["uses"], "bodies": sorted(bodies), "grid": grid, "regions": regions}
 
 
 @app.get("/api/overview")
