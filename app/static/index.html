@@ -53,7 +53,8 @@
         <input id="q" placeholder="e.g. What is proposed around RRTS stations in Modinagar and Meerut?" autofocus>
         <button>Search</button>
       </form>
-      <p class="hint" id="hint">Results are passages from the documents, grouped by governing body, each with its document and PDF page. English questions are also matched against Hindi documents through a glossary of planning terms.</p>
+      <p class="hint" id="hint">Ask for a specific provision, e.g. "FAR for industry" or "land use conversion charges for commercial". The answer shows what each governing body provides, word for word, with document and PDF page.</p>
+      <div id="prov"></div>
       <div id="answer"></div>
       <div id="results"></div>
     </div>
@@ -102,12 +103,15 @@ function renderDocs() {
 async function run() {
   const q = $('#q').value.trim(); if (!q) return;
   const p = selected(); p.set('q', q);
-  $('#results').innerHTML = '<p class="hint">Searching…</p>'; $('#answer').innerHTML = '';
+  $('#results').innerHTML = '<p class="hint">Searching…</p>'; $('#answer').innerHTML = ''; $('#prov').innerHTML = '';
+  const pp = new URLSearchParams(); pp.set('q', q);
+  p.forEach((v, k) => { if (k === 'jurisdiction' || k === 'sector') pp.append(k, v); });
+  fetch('/api/provisions?' + pp).then(r => r.json()).then(renderProv).catch(() => {});
   const d = await (await fetch('/api/search?' + p)).json();
   if (!d.results.length) { $('#results').innerHTML = '<p class="hint">No passages found. Try fewer or different words, or clear the filters.</p>'; return; }
   const groups = {};
   d.results.forEach(r => (groups[r.body] ??= []).push(r));
-  $('#results').innerHTML = `<p class="hint">${d.results.length} passages from ${Object.keys(groups).length} governing bodies.</p>` +
+  $('#results').innerHTML = `<h3 style="margin:22px 0 4px">Other matching passages</h3><p class="hint">${d.results.length} passages from ${Object.keys(groups).length} governing bodies.</p>` +
     Object.entries(groups).map(([body, hits]) => `<div class="group"><h2>${esc(body)}</h2>` + hits.map(h =>
       `<div class="hit"><div class="cite">${esc(h.title)}, PDF page ${h.page}</div>
        <div class="tags"><span class="tag">${esc(h.jurisdiction)}</span><span class="tag">${esc(h.doc_type)}${h.year ? ' ' + esc(h.year) : ''}</span><span class="tag">${esc(h.language)}</span>${methodTag(h.method)}</div>
@@ -116,6 +120,21 @@ async function run() {
   fetch('/api/answer?' + p).then(r => r.json()).then(a => {
     if (a.enabled && a.answer) $('#answer').innerHTML = `<div class="answer"><b>Summary from local model (check against the passages below)</b>\n${esc(a.answer)}</div>`;
   }).catch(() => {});
+}
+function renderProv(d) {
+  if (!d.bodies || !d.bodies.length) return;
+  let hl; try { hl = new RegExp(d.highlight, 'g'); } catch (e) { hl = null; }
+  const mark = t => { const x = esc(t); if (!hl) return x; try { return esc(t.replace(hl, m => '\u0001' + m + '\u0002')).replace(/\u0001/g, '<mark>').replace(/\u0002/g, '</mark>'); } catch (e) { return x; } };
+  const withP = d.bodies.filter(b => b.provisions.length), without = d.bodies.filter(b => !b.provisions.length);
+  let h = `<h3 style="margin:0 0 4px">What each governing body provides</h3><p class="hint">Looked for: ${d.concepts.map(esc).join(' + ')}. ${d.model ? 'One-line statements are written by the local model "' + esc(d.model) + '" from the extract beneath them; the extract is the authority.' : 'Extracts are word for word from the documents.'}</p>`;
+  h += withP.map(b => `<div class="group"><h2>${esc(b.body)} says</h2>` + b.provisions.map(p =>
+    `<div class="hit">${p.says ? `<div class="snip" style="font-size:15px;margin-bottom:6px"><b>${esc(p.says)}</b></div>` : ''}
+     <div class="cite">${esc(p.title)}, PDF page ${p.page}</div>
+     <div class="tags"><span class="tag">${esc(p.level)}</span><span class="tag">${esc(p.legal_status)}</span><span class="tag">${esc(p.jurisdiction)}</span>${p.match === 'nearby' ? '<span class="tag warn">Related mention, not a direct provision</span>' : ''}${methodTag(p.method)}</div>
+     <pre class="full" style="max-height:300px">${mark(p.text)}</pre></div>`).join('') + '</div>').join('');
+  if (!withP.length) h += '<p class="hint">No provision found where all these terms occur together. See the passages below, or use fewer words.</p>';
+  if (without.length) h += `<p class="hint">No provision found in the loaded documents of: ${without.map(b => esc(b.body)).join(', ')}.</p>`;
+  $('#prov').innerHTML = h;
 }
 $('#results').addEventListener('click', async e => {
   const b = e.target.closest('button[data-doc]'); if (!b) return;

@@ -11,8 +11,7 @@ GLOSSARY = {
     "far": ["एफ.ए.आर.", "तल क्षेत्र अनुपात"], "floor area ratio": ["एफ.ए.आर.", "तल क्षेत्र अनुपात"],
     "density": ["घनत्व"], "population": ["जनसंख्या"], "housing": ["आवास", "आवासीय"],
     "development authority": ["विकास प्राधिकरण"], "development fee": ["विकास शुल्क"],
-    "development charges": ["विकास शुल्क"], "conversion charges": ["परिवर्तन शुल्क"],
-    "land use conversion": ["भू-उपयोग परिवर्तन"], "land pooling": ["लैण्ड पूलिंग", "लैंड पूलिंग"],
+    "development charges": ["विकास शुल्क"],     "land use conversion": ["भू-उपयोग परिवर्तन"], "land pooling": ["लैण्ड पूलिंग", "लैंड पूलिंग"],
     "tdr": ["टी.डी.आर.", "हस्तान्तरणीय विकास अधिकार", "हस्तांतरणीय विकास अधिकार"],
     "transferable development rights": ["टी.डी.आर.", "हस्तान्तरणीय विकास अधिकार"],
     "water supply": ["जलापूर्ति"], "sewerage": ["सीवरेज", "जल-मल"], "drainage": ["जल निकासी", "ड्रेनेज"],
@@ -27,7 +26,10 @@ GLOSSARY = {
     "airport": ["हवाई अड्डा", "एयरपोर्ट"], "freight": ["माल"], "corridor": ["कॉरिडोर", "कोरिडोर", "गलियारा"],
     "station": ["स्टेशन"], "depot": ["डिपो"], "influence zone": ["प्रभाव क्षेत्र"], "policy": ["नीति"],
     "act": ["अधिनियम"], "rules": ["नियमावली"], "notification": ["अधिसूचना"], "township": ["टाउनशिप"],
-    "slum": ["मलिन बस्ती"], "education": ["शिक्षा"], "health": ["स्वास्थ्य"], "tourism": ["पर्यटन"],
+    "slum": ["मलिन बस्ती"], "charges": ["शुल्क"], "charge": ["शुल्क"], "fee": ["शुल्क"], "fees": ["शुल्क"],
+    "group housing": ["ग्रुप हाउसिंग", "समूह आवास"], "width": ["चौड़ाई", "चौड़े", "चौड़ा"], "plot": ["भूखण्ड", "भूखंड"],
+    "conversion": ["परिवर्तन"], "warehouse": ["वेयरहाउस", "गोदाम"], "warehousing": ["वेयरहाउस", "गोदाम"], "hospital": ["चिकित्सालय", "अस्पताल"],
+    "school": ["विद्यालय", "स्कूल"], "hotel": ["होटल"], "office": ["कार्यालय"], "institutional": ["संस्थागत"], "coverage": ["आच्छादन"], "education": ["शिक्षा"], "health": ["स्वास्थ्य"], "tourism": ["पर्यटन"],
 }
 STOP = set("a an the of in on at to for and or is are was were be by with from as that this what which how do does "
            "any there their its it about into where when who whom whose can could should would will shall has have had "

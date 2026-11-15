@@ -7,7 +7,11 @@ A workspace for reading the plans of several governing bodies side by side. Pilo
 
 1. **Document repository** – every document is tagged by governing body, jurisdiction, sector, type, year and plan
    horizon (`data/manifest.csv`).
-2. **Search across all documents with citations** – a plain-English question returns the matching passages grouped by
+2. **Provision finder** – ask for a specific provision ("FAR for industry"). For each governing body the app shows
+   the exact extract where the terms occur together, word for word, with document, legal status and PDF page, and
+   lists the bodies whose documents have no such provision. With the local model on, each extract also gets a
+   one-line statement of what it provides (`app/provisions.py`).
+   **Search across all documents with citations** – a plain-English question returns the matching passages grouped by
    governing body, each with document name, body and PDF page. English questions also reach the Hindi documents
    through a glossary of planning terms (`app/glossary.py`).
 3. **Filters** – by governing body, jurisdiction, sector and document type.

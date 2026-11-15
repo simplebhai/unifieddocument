@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from . import index, conflicts
+from . import index, conflicts, provisions
 from .glossary import GLOSSARY, STOP
 
 ROOT = Path(__file__).resolve().parent
@@ -110,6 +110,11 @@ def answer(q: str, body: list[str] = Query(None), jurisdiction: list[str] = Quer
         return {"enabled": True, "answer": text, "sources": [h["citation"] for h in hits]}
     except Exception as e:
         return {"enabled": True, "error": str(e)}
+
+@app.get("/api/provisions")
+def find_provisions(q: str, jurisdiction: list[str] = Query(None), sector: list[str] = Query(None)):
+    """The exact provision each governing body has on the question, word for word, with document and page."""
+    return provisions.find(db(), q, jurisdiction, sector)
 
 @app.get("/api/topics")
 def topics():
