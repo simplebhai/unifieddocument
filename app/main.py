@@ -160,13 +160,28 @@ LEVEL_STANDING = {
     9: "Reference only: does not bind.",
 }
 
+def _reg():
+    return json.loads((index.ROOT / "data" / "regulations.json").read_text(encoding="utf-8"))
+
+
+def _enrich(c, docs):
+    d = docs[c["doc_id"]]
+    level = int(d["level"])
+    return c | {"doc_title": d["title"], "body": d["body"], "file": d["file"], "level": level,
+                "level_label": conflicts.LEVELS.get(level), "legal_status": d["legal_status"],
+                "draft": bool(re.search(r"draft|proposal", d["legal_status"], re.I)),
+                "standing": LEVEL_STANDING.get(level, ""), "method": d["method"]}
+
+
+def _docs():
+    return {r["doc_id"]: dict(r) for r in db().execute("select * from docs")}
+
+
 @app.get("/api/regmatrix")
 def regmatrix(category: str = "far", use: str = "all", located: bool = False, authority: str = "",
               in_tod: bool = False, station: list[str] = Query(None)):
     """Click-to-compare matrix: the document cards that apply at a location, for one planning parameter."""
-    reg = json.loads((index.ROOT / "data" / "regulations.json").read_text(encoding="utf-8"))
-    docs = {r["doc_id"]: dict(r) for r in db().execute("select * from docs")}
-    station = station or []
+    reg, docs, station = _reg(), _docs(), station or []
     def applies(scope, needs_tod):
         if not located:
             return True
@@ -180,25 +195,79 @@ def regmatrix(category: str = "far", use: str = "all", located: bool = False, au
         if kind == "station":
             return bool(set(val.split("|")) & set(station))
         return True
-    cards = []
+    cards, counts = [], {}
     for c in reg["cards"]:
-        if c["category"] != category or not applies(c["scope"], c["requires_tod"]):
+        if not applies(c["scope"], c["requires_tod"]) or (use != "all" and c["uses"] and use not in c["uses"]):
             continue
-        if use != "all" and c["uses"] and use not in c["uses"]:
-            continue
-        d = docs[c["doc_id"]]
-        level = int(d["level"])
-        draft = bool(re.search(r"draft|proposal", d["legal_status"], re.I))
-        cards.append(c | {"doc_title": d["title"], "body": d["body"], "file": d["file"], "level": level,
-                          "level_label": conflicts.LEVELS.get(level), "legal_status": d["legal_status"], "draft": draft,
-                          "standing": LEVEL_STANDING.get(level, ""), "method": d["method"]})
+        counts[c["category"]] = counts.get(c["category"], 0) + 1
+        if c["category"] == category:
+            cards.append(_enrich(c, docs))
     cards.sort(key=lambda c: (c["level"], c["title"]))
     shown = {c["id"] for c in cards}
     flags = [f for f in reg["flags"] if category in f["categories"] and applies(f.get("scope"), f.get("needs_tod"))
              and (use == "all" or not f.get("uses") or use in f["uses"]) and shown & set(f["cards"])
              and (located or f["kind"] != "unlock")]
-    return {"categories": reg["categories"], "uses": reg["uses"], "cards": cards, "flags": flags,
+    return {"categories": reg["categories"], "uses": reg["uses"], "cards": cards, "flags": flags, "counts": counts,
             "rules": {r["rule_id"]: r for r in conflicts.RULES}}
+
+
+def _card_text(c):
+    parts = [c["title"], c["summary"], *c["conditions"], *c["incentives"]]
+    for t in c["tables"]:
+        parts.append(t["title"])
+        parts += [" ".join(r) for r in t["rows"]]
+    return " ".join(parts).lower()
+
+
+@app.get("/api/rules")
+def rules_search(q: str = "", category: str = "", use: str = "all", body: str = ""):
+    """Search the curated, page-cited rules (not raw page text). Every word of the query must appear in a card."""
+    reg, docs = _reg(), _docs()
+    words = [w for w in re.findall(r"[a-z0-9.%]+", q.lower()) if w not in GLOSS_STOP and len(w) > 1]
+    catlabel = {c["id"]: c["label"] for c in reg["categories"]}
+    out = []
+    for c in reg["cards"]:
+        if category and c["category"] != category:
+            continue
+        if use != "all" and c["uses"] and use not in c["uses"]:
+            continue
+        e = _enrich(c, docs)
+        if body and e["body"] != body:
+            continue
+        text = _card_text(c) + " " + e["body"].lower() + " " + catlabel[c["category"]].lower()
+        alt = {"far": "floor area ratio fsi", "tod": "transit oriented", "ecs": "equivalent car space"}
+        text += " " + " ".join(alt.get(w, "") for w in alt if w in text)
+        stem = lambda w: w[:-1] if w.endswith(("s", "y")) and len(w) > 3 else w
+        if all(stem(w) in text for w in words):
+            score = sum(c["title"].lower().count(w) * 3 + text.count(w) for w in words)
+            out.append(e | {"category_label": catlabel[c["category"]], "score": score})
+    out.sort(key=lambda c: (-c["score"], c["level"]))
+    return {"cards": out, "categories": reg["categories"], "uses": reg["uses"],
+            "bodies": sorted({docs[c["doc_id"]]["body"] for c in reg["cards"]}), "words": words}
+
+
+@app.get("/api/overview")
+def overview():
+    """Conflicts, flags and which bodies cover which planning parameter."""
+    reg, docs = _reg(), _docs()
+    cards = {c["id"]: _enrich(c, docs) for c in reg["cards"]}
+    bodies = sorted({c["body"] for c in cards.values()})
+    grid = {}
+    for c in cards.values():
+        g = grid.setdefault(c["category"], {})
+        g.setdefault(c["body"], {"figures": 0, "notes": 0})
+        # a card with tables or conditions carries figures; map-only and scanned cards do not
+        g[c["body"]]["figures" if (c["tables"] or c["conditions"]) and c["quality"] not in ("ocr", "map") else "notes"] += 1
+    per_doc = {}
+    for c in cards.values():
+        per_doc.setdefault(c["doc_id"], set()).add(c["category"])
+    flags = [f | {"titles": [cards[i]["title"] + " (" + cards[i]["body"] + ")" for i in f["cards"] if i in cards]} for f in reg["flags"]]
+    return {"categories": reg["categories"], "bodies": bodies, "grid": grid, "flags": flags,
+            "levels": conflicts.LEVELS, "rules": {r["rule_id"]: r for r in conflicts.RULES},
+            "per_doc": {k: sorted(v) for k, v in per_doc.items()}}
+
+
+GLOSS_STOP = {"the", "a", "an", "of", "for", "in", "is", "are", "what", "how", "much", "does", "do", "to", "and", "on", "my", "with", "which", "can", "i", "it", "be", "required", "allowed", "permitted", "rule", "rules"}
 
 JOB = {"running": False, "log": []}
 

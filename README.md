@@ -71,3 +71,13 @@ Click the map (authority area, RRTS station influence zone, or the track strip) 
 Map engine: the map is drawn with GeoLibre's headless engine (opengeos/GeoLibre, MIT; MapLibre GL JS 6). Rebuild the bundle with `sh geolibre/build.sh` (Node 20+); output goes to `app/static/geolibre/`. Basemaps are Esri streets and imagery tiles (keyless, need internet), or none.
 
 Data: `data/regulations.json` (built by `pipeline/build_regulations.py`, every figure cited to a PDF page), `app/static/geo.json` (OSM tehsils, stations, 1.5 km and 500 m influence zones). Limits: authority areas are tehsil approximations; GDA has map sheets only; the TOD Policy 2022 is not loaded; scanned Hindi notifications show no figures. Base-map tiles need internet on your machine; the vector layers work without them.
+
+## Tabs
+
+- **Regulatory matrix**: click-to-compare map with 16 planning parameters (FAR, coverage and height, setbacks and roads, land use, TOD, parking and basements, layouts and subdivision, open space and green cover, community facilities, EWS/LIG and affordable housing, water, energy and environment, fire safety, heritage and rivers, fees and charges, TDR, pooling and extra FAR, permissions and process). All cards come from `pipeline/build_regulations.py`, each figure cited to a PDF page.
+- **Find a rule**: keyword search over those curated rules, filtered by parameter, land use and governing body.
+- **Ask a question**: matching curated rules first, then the full-text passages (including Hindi documents).
+- **Conflicts and alignment**: the flagged conflicts and checks, a grid of which body covers which parameter (dashes are gaps), and the order of precedence. The old passage-by-passage comparison is kept under "advanced".
+- **Documents**: the library, with the parameters each document feeds.
+
+Not yet covered by curated rules: use-specific standards (hotels, cinemas, petrol pumps, hospitals, schools, farmhouses), EV charging, accessibility, structural safety, and most of the Noida, NCRPB and GDA documents (map sheets and scans give no figures).
