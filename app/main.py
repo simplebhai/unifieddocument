@@ -149,6 +149,57 @@ def compare(topic: str, jurisdiction: list[str] = Query(None), sector: list[str]
     """Evidence by body on one topic, the order of precedence, and a suggested resolution and policy clause."""
     return conflicts.compare(db(), search, topic, None, jurisdiction, sector, region)
 
+LEVEL_STANDING = {
+    1: "Highest in the order within NCR: no development may violate the Regional Plan (rule R1).",
+    2: "State Act: rules, byelaws and plans are made under it (rule R2).",
+    3: "State rule, policy or notification: prevails over the building byelaws where they differ (rule R3).",
+    4: "State byelaws: apply in every development area of Uttar Pradesh. State sectoral policies prevail over them where they differ (rule R3).",
+    5: "Master plan: governs within its own development area and must conform to the Regional Plan (rules R1 and R4).",
+    6: "Zonal plan: prepared within the master plan (rule R4).",
+    7: "Project document: sets no rules of its own. The project must accord with the master plan (rule R5).",
+    9: "Reference only: does not bind.",
+}
+
+@app.get("/api/regmatrix")
+def regmatrix(category: str = "far", use: str = "all", located: bool = False, authority: str = "",
+              in_tod: bool = False, station: list[str] = Query(None)):
+    """Click-to-compare matrix: the document cards that apply at a location, for one planning parameter."""
+    reg = json.loads((index.ROOT / "data" / "regulations.json").read_text(encoding="utf-8"))
+    docs = {r["doc_id"]: dict(r) for r in db().execute("select * from docs")}
+    station = station or []
+    def applies(scope, needs_tod):
+        if not located:
+            return True
+        if needs_tod and not in_tod:
+            return False
+        if not scope or scope in ("state", "ncr"):
+            return True
+        kind, _, val = scope.partition(":")
+        if kind == "authority":
+            return authority == val
+        if kind == "station":
+            return bool(set(val.split("|")) & set(station))
+        return True
+    cards = []
+    for c in reg["cards"]:
+        if c["category"] != category or not applies(c["scope"], c["requires_tod"]):
+            continue
+        if use != "all" and c["uses"] and use not in c["uses"]:
+            continue
+        d = docs[c["doc_id"]]
+        level = int(d["level"])
+        draft = bool(re.search(r"draft|proposal", d["legal_status"], re.I))
+        cards.append(c | {"doc_title": d["title"], "body": d["body"], "file": d["file"], "level": level,
+                          "level_label": conflicts.LEVELS.get(level), "legal_status": d["legal_status"], "draft": draft,
+                          "standing": LEVEL_STANDING.get(level, ""), "method": d["method"]})
+    cards.sort(key=lambda c: (c["level"], c["title"]))
+    shown = {c["id"] for c in cards}
+    flags = [f for f in reg["flags"] if category in f["categories"] and applies(f.get("scope"), f.get("needs_tod"))
+             and (use == "all" or not f.get("uses") or use in f["uses"]) and shown & set(f["cards"])
+             and (located or f["kind"] != "unlock")]
+    return {"categories": reg["categories"], "uses": reg["uses"], "cards": cards, "flags": flags,
+            "rules": {r["rule_id"]: r for r in conflicts.RULES}}
+
 JOB = {"running": False, "log": []}
 
 @app.post("/api/add")

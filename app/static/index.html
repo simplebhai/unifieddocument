@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Multi-Agency Planning Document Platform</title>
+<link rel="stylesheet" href="/static/leaflet/leaflet.css">
 <style>
   :root { --ink:#0b0b0b; --muted:#52514e; --line:#dcdbd6; --bg:#f4f4f1; --card:#fcfcfb; --accent:#256abf; --mark:#ffe58a;
           --series:#2a78d6; --direct:#256abf; --related:#86b6ef; --warn:#8a5d00; --warnline:#c98a00; }
@@ -66,6 +67,34 @@
   .c.none { color:var(--muted); cursor:default; border:1px dashed var(--line); }
   .legend { font-size:12px; color:var(--muted); margin-top:8px; }
   .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 4px 0 12px; vertical-align:-1px; }
+  body.wide main { grid-template-columns:minmax(0,1fr); } body.wide aside { display:none; }
+  .mx-top { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(280px,1fr); gap:16px; margin-bottom:16px; }
+  @media (max-width:900px) { .mx-top { grid-template-columns:1fr; } }
+  #map { height:440px; border:1px solid var(--line); border-radius:8px; cursor:crosshair; background:var(--card); }
+  .where { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+  .where h3 { margin:0 0 6px; font-size:15px; } .where ul { margin:6px 0 10px; padding-left:18px; } .where li { margin:2px 0; }
+  .cats { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .cats button { font:inherit; padding:8px 14px; border-radius:20px; border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer; }
+  .cats button.on { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; align-items:start; }
+  .rcard { background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .rcard header { padding:10px 14px; border-bottom:1px solid var(--line); background:none; }
+  .rcard .body-name { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .rcard h3 { margin:2px 0 0; font-size:15px; } .rcard .doc { font-size:12px; color:var(--muted); }
+  .rcard .in { padding:10px 14px; } .rcard p { margin:0 0 8px; font-size:14px; }
+  .rcard table { border-collapse:collapse; width:100%; font-size:13px; margin:0 0 10px; }
+  .rcard caption { text-align:left; font-weight:600; font-size:13px; padding:4px 0; }
+  .rcard th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); border-bottom:1px solid var(--line); padding:3px 6px 3px 0; }
+  .rcard td { border-bottom:1px solid var(--line); padding:4px 6px 4px 0; font-variant-numeric:tabular-nums; }
+  .rcard h4 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:10px 0 4px; }
+  .rcard ul { margin:0 0 8px; padding-left:18px; font-size:13px; } .rcard li { margin:3px 0; }
+  .rcard .stand { border-top:1px solid var(--line); padding:10px 14px; font-size:13px; }
+  .rcard .cite { font-size:12px; font-weight:400; color:var(--muted); margin-top:6px; }
+  .pill { display:inline-block; font-size:12px; border-radius:10px; padding:0 8px; margin:0 4px 4px 0; border:1px solid var(--line); color:var(--muted); }
+  .pill.draft, .pill.warn { border-color:var(--warnline); color:var(--warn); } .pill.force { border-color:var(--accent); color:var(--accent); }
+  .flag { border:1px solid var(--line); border-left:4px solid var(--warnline); background:var(--card); border-radius:8px; padding:10px 14px; margin-bottom:10px; font-size:14px; }
+  .flag.unlock { border-left-color:var(--accent); } .flag b.k { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); display:block; }
+  .flag p { margin:4px 0 0; }
   #tip { position:fixed; pointer-events:none; background:var(--ink); color:var(--bg); font-size:12px; padding:5px 8px; border-radius:5px; max-width:320px; display:none; z-index:9; }
 </style>
 </head>
@@ -73,14 +102,29 @@
 <header>
   <h1>Multi-Agency Planning Document Platform</h1>
   <nav>
-    <button id="t-rule" class="on">Rule lookup</button><button id="t-search">Ask a question</button>
+    <button id="t-mx" class="on">Regulatory matrix</button><button id="t-rule">Rule lookup</button><button id="t-search">Ask a question</button>
     <button id="t-cmp">Conflicts and alignment</button><button id="t-docs">Documents</button>
   </nav>
 </header>
 <main>
   <aside id="filters"></aside>
   <section>
-    <div id="v-rule">
+    <div id="v-mx">
+      <div class="mx-top">
+        <div id="map"></div>
+        <div class="where">
+          <h3 id="w-title">Click the map</h3>
+          <div id="w-body"><p class="hint">Click any point: an authority area, an RRTS station's influence zone, or the strip along the track. The cards below then show only the documents that govern that spot. Until you click, every loaded document is shown.</p></div>
+          <div class="row" style="margin:0"><div class="grow"><label for="w-pick">or pick a place</label><select id="w-pick"></select></div><button class="ghost" id="w-clear" type="button">Show all areas</button></div>
+          <p class="hint" style="margin:10px 0 0">Authority areas are drawn as tehsil boundaries from OpenStreetMap, as an approximation: the notified development areas and municipal limits are not loaded. Influence zones are drawn as the Meerut plan defines them (1.5 km at stations, 500 m along the track).</p>
+        </div>
+      </div>
+      <div class="cats" id="mx-cats"></div>
+      <div class="row"><div><label for="mx-use">Land use or building type</label><select id="mx-use"></select></div></div>
+      <div id="mx-flags"></div>
+      <div class="cards" id="mx-cards"></div>
+    </div>
+    <div id="v-rule" hidden>
       <form id="rform">
         <div class="row">
           <div><label for="r-region">Region</label><select id="r-region"></select></div>
@@ -131,11 +175,12 @@
   </section>
 </main>
 <div id="tip"></div>
+<script src="/static/leaflet/leaflet.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FACETS = [['region','Region'],['body','Governing body'],['jurisdiction','Jurisdiction'],['sector','Sector'],['doc_type','Document type']];
-const TABS = ['rule','search','cmp','docs'];
+const TABS = ['mx','rule','search','cmp','docs'];
 let DOCS = [];
 const get = async (u, p) => (await fetch(u + (p ? '?' + p : ''))).json();
 
@@ -149,7 +194,7 @@ function methodTag(m) {
   if (m === 'krutidev') return '<span class="tag">Hindi text converted from legacy font</span>';
   return '';
 }
-function show(tab) { TABS.forEach(t => { $('#v-' + t).hidden = t !== tab; $('#t-' + t).className = t === tab ? 'on' : ''; }); }
+function show(tab) { TABS.forEach(t => { $('#v-' + t).hidden = t !== tab; $('#t-' + t).className = t === tab ? 'on' : ''; }); document.body.classList.toggle('wide', tab === 'mx'); if (tab === 'mx' && MX.map) MX.map.invalidateSize(); }
 TABS.forEach(t => $('#t-' + t).onclick = () => show(t));
 
 document.addEventListener('mousemove', e => {
@@ -316,7 +361,73 @@ async function runCompare() {
 }
 $('#cform').addEventListener('submit', e => { e.preventDefault(); runCompare(); });
 
-loadDocs(); loadTopics(); loadForm();
+/* ---------- regulatory matrix ---------- */
+const MX = {map: null, geo: null, cat: 'far', ctx: null, layers: {}};
+const KIND = {conflict: 'Conflict', inconsistency: 'Inconsistency', unlock: 'Unlocked here', check: 'To check'};
+function inRing(pt, ring) { let c = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c; } return c; }
+function inGeom(pt, g) { const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : []; return polys.some(p => inRing(pt, p[0]) && !p.slice(1).some(h => inRing(pt, h))); }
+async function initMatrix() {
+  MX.geo = await get('/static/geo.json');
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const map = MX.map = L.map('map', {zoomControl: true}).setView([28.83, 77.58], 10);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
+  const style = {district: {color: css('--muted'), weight: 1, dashArray: '4 4', fill: false}, authority: {color: css('--accent'), weight: 1.5, fillOpacity: .06},
+                 tod_track: {color: '#eb6834', weight: 0, fillOpacity: .22}, tod_station: {color: '#eb6834', weight: 1, fillOpacity: .12}, corridor: {color: '#b23c12', weight: 2.5}};
+  ['district', 'authority', 'tod_track', 'tod_station', 'corridor'].forEach(k => L.geoJSON({type: 'FeatureCollection', features: MX.geo.features.filter(f => f.properties.kind === k)}, {style: style[k], interactive: false}).addTo(map));
+  MX.geo.features.filter(f => f.properties.kind === 'station').forEach(f => L.circleMarker([f.geometry.coordinates[1], f.geometry.coordinates[0]], {radius: 4, color: '#fff', weight: 1.5, fillColor: '#b23c12', fillOpacity: 1}).bindTooltip(f.properties.name).addTo(map));
+  MX.geo.features.filter(f => f.properties.kind === 'authority').forEach(f => { const b = L.geoJSON(f).getBounds().getCenter(); L.marker(b, {interactive: false, icon: L.divIcon({className: '', html: `<div style="font:600 12px system-ui;color:${css('--accent')};white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff">${esc(f.properties.authority)}: ${esc(f.properties.name)}</div>`})}).addTo(map); });
+  MX.marker = L.circleMarker([0, 0], {radius: 8, color: css('--ink'), weight: 2, fillColor: '#fff', fillOpacity: 1, interactive: false});
+  map.on('click', e => locate(e.latlng.lng, e.latlng.lat));
+  const st = MX.geo.features.filter(f => f.properties.kind === 'station').sort((a, b) => b.geometry.coordinates[1] - a.geometry.coordinates[1]);
+  $('#w-pick').innerHTML = '<option value="">Choose…</option><optgroup label="RRTS stations (north to south)">' + st.map(f => `<option value="${f.geometry.coordinates.join(',')}">${esc(f.properties.name)}</option>`).join('') + '</optgroup><optgroup label="Authority areas">' +
+    MX.geo.features.filter(f => f.properties.kind === 'authority').map(f => { const c = L.geoJSON(f).getBounds().getCenter(); return `<option value="${c.lng},${c.lat}">${esc(f.properties.authority)}: ${esc(f.properties.name)} (centre)</option>`; }).join('') + '</optgroup>';
+  $('#w-pick').addEventListener('change', e => { if (!e.target.value) return; const [x, y] = e.target.value.split(',').map(Number); map.setView([y, x], 12); locate(x, y); });
+  $('#w-clear').addEventListener('click', () => { MX.ctx = null; MX.marker.remove(); $('#w-pick').value = ''; $('#w-title').textContent = 'All areas'; $('#w-body').innerHTML = '<p class="hint">Showing every loaded document. Click the map to narrow to one spot.</p>'; loadMatrixCards(); });
+  $('#mx-use').addEventListener('change', loadMatrixCards);
+  loadMatrixCards();
+}
+function locate(x, y) {
+  const pt = [x, y], F = MX.geo.features;
+  const auth = F.find(f => f.properties.kind === 'authority' && inGeom(pt, f.geometry));
+  const dist = F.find(f => f.properties.kind === 'district' && inGeom(pt, f.geometry));
+  const izs = F.filter(f => f.properties.kind === 'tod_station' && inGeom(pt, f.geometry));
+  const track = F.some(f => f.properties.kind === 'tod_track' && inGeom(pt, f.geometry));
+  MX.ctx = {authority: auth ? auth.properties.authority : '', stations: izs.map(f => f.properties.station), in_tod: izs.length > 0 || track};
+  MX.marker.setLatLng([y, x]).addTo(MX.map);
+  const layers = [];
+  if (auth) layers.push(`<b>${esc(auth.properties.authority)}</b> area: ${esc(auth.properties.name)} (${esc(auth.properties.plan_area)} master plan)`);
+  else if (dist) layers.push(`${esc(dist.properties.name)}, outside the mapped authority areas`);
+  else layers.push('Outside Ghaziabad and Meerut districts: only State-wide and NCR-wide documents are shown');
+  izs.forEach(f => layers.push(`<b>TOD influence zone</b> of ${esc(f.properties.station)} station (1.5 km)`));
+  if (track) layers.push('<b>Track influence strip</b> (500 m either side of the RRTS line)');
+  layers.push('Uttar Pradesh: State Acts, rules and byelaws apply'); layers.push('National Capital Region: the Regional Plan applies');
+  $('#w-title').textContent = `Selected point: ${y.toFixed(4)}° N, ${x.toFixed(4)}° E`;
+  $('#w-body').innerHTML = `<p style="margin:0">This point lies inside ${layers.length} overlapping jurisdictions:</p><ul>${layers.map(l => `<li>${l}</li>`).join('')}</ul>`;
+  loadMatrixCards();
+}
+async function loadMatrixCards() {
+  const p = new URLSearchParams({category: MX.cat, use: $('#mx-use').value || 'all'});
+  if (MX.ctx) { p.set('located', 'true'); p.set('authority', MX.ctx.authority); p.set('in_tod', MX.ctx.in_tod); MX.ctx.stations.forEach(s => p.append('station', s)); }
+  const d = await get('/api/regmatrix', p);
+  $('#mx-cats').innerHTML = d.categories.map(c => `<button data-cat="${c.id}" class="${c.id === MX.cat ? 'on' : ''}">${esc(c.label)}</button>`).join('');
+  if (!$('#mx-use').options.length) $('#mx-use').innerHTML = d.uses.map(u => `<option value="${u.id}">${esc(u.label)}</option>`).join('');
+  $('#mx-flags').innerHTML = d.flags.map(f => `<div class="flag ${f.kind}"><b class="k">${KIND[f.kind] || f.kind}</b><b>${esc(f.title)}</b><p>${esc(f.detail)}</p><p><b>Status:</b> ${esc(f.standing)}${f.rule && d.rules[f.rule] ? ` <span class="hint">Rule ${esc(f.rule)}: ${esc(d.rules[f.rule].source)}${d.rules[f.rule].source_page ? ', PDF p.' + esc(d.rules[f.rule].source_page) : ''}.</span>` : ''}</p></div>`).join('');
+  const flagged = new Set(d.flags.filter(f => f.kind !== 'unlock').flatMap(f => f.cards));
+  $('#mx-cards').innerHTML = d.cards.length ? d.cards.map(c => `<div class="rcard">
+    <header><div class="body-name">${esc(c.body)}</div><h3>${esc(c.title)}</h3><div class="doc">${esc(c.doc_title)}</div></header>
+    <div class="in"><p>${esc(c.summary)}</p>` +
+    c.tables.map(t => `<table><caption>${esc(t.title)}</caption><tr>${t.columns.map(h => `<th>${esc(h)}</th>`).join('')}</tr>${t.rows.map(r => `<tr>${r.map(v => `<td>${esc(v === 'UR' ? 'Unrestricted' : v)}</td>`).join('')}</tr>`).join('')}</table>`).join('') +
+    (c.conditions.length ? `<h4>Conditions</h4><ul>${c.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') +
+    (c.incentives.length ? `<h4>Purchasable allowances and incentives</h4><ul>${c.incentives.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '') + `</div>
+    <div class="stand"><span class="pill">${esc(c.level_label)}</span><span class="pill ${c.draft ? 'draft' : 'force'}">${c.draft ? 'Draft: does not bind yet' : esc(c.legal_status)}</span>${flagged.has(c.id) ? '<span class="pill warn">In a conflict flagged above</span>' : ''}${c.quality === 'ocr' ? '<span class="pill warn">Scanned: figures not machine-readable</span>' : ''}${c.quality === 'map' ? '<span class="pill warn">Map sheet only</span>' : ''}
+      <div>${esc(c.standing)}</div>
+      <div class="cite">Source: ${esc(c.file)}, ${c.cites.map(x => `PDF p.${x.page} (${esc(x.ref)})`).join('; ')}</div></div></div>`).join('')
+    : '<p class="hint">No loaded document has a provision on this for the selected spot and land use.</p>';
+}
+$('#mx-cats').addEventListener('click', e => { const b = e.target.closest('button[data-cat]'); if (!b) return; MX.cat = b.dataset.cat; loadMatrixCards(); });
+
+document.body.classList.add('wide');
+loadDocs(); loadTopics(); loadForm(); initMatrix();
 </script>
 </body>
 </html>
